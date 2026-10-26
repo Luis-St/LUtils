@@ -23,14 +23,18 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
+import java.util.function.Function;
 
 /**
  * A string reader which knows the line and column of its current index.<br>
  * <p>
- *     The position is computed on demand from a table of line starts,<br>
- *     which is built once when a position is requested for the first time.<br>
- *     Therefore, tracking the position does not slow down reading.
+ *     The position is computed on the fly from the last computed position.<br>
+ *     Only the characters between the last computed position and the requested index are scanned,<br>
+ *     therefore each character is processed at most once while the reader moves forward.
+ * </p>
+ * <p>
+ *     Sub readers which are positioned string readers continue from the position of this reader,<br>
+ *     so the characters before the sub reader are not scanned again.
  * </p>
  * <p>
  *     Supported line breaks are: LF ('\n'), CR ('\r'), CRLF ('\r\n').<br>
@@ -42,9 +46,17 @@ import java.util.Arrays;
 public class PositionedStringReader extends StringReader {
 	
 	/**
-	 * The indices at which the lines of the string start, or null if not computed yet.<br>
+	 * The index of the last computed position.<br>
 	 */
-	private int @Nullable [] lineStarts;
+	private int trackedIndex;
+	/**
+	 * The one-based line of the last computed position.<br>
+	 */
+	private int trackedLine = 1;
+	/**
+	 * The index at which the line of the last computed position starts.<br>
+	 */
+	private int trackedLineStart;
 	
 	/**
 	 * Constructs a new positioned string reader with the given string.<br>
@@ -95,28 +107,30 @@ public class PositionedStringReader extends StringReader {
 	}
 	
 	/**
-	 * Computes the indices at which the lines of the given string start.<br>
+	 * Checks whether the character at the given index of the given string ends a line.<br>
+	 * A carriage return followed by a line feed does not end a line, the line feed does.<br>
 	 *
 	 * @param string The string
-	 * @return The start indices of the lines
+	 * @param index The index of the character
+	 * @return True if the character ends a line, otherwise false
 	 */
-	private static int @NonNull [] computeLineStarts(@NonNull String string) {
-		int[] starts = new int[16];
-		int count = 1;
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			if (c == '\r' && i + 1 < string.length() && string.charAt(i + 1) == '\n') {
-				continue;
-			}
-			
-			if (c == '\n' || c == '\r') {
-				if (count == starts.length) {
-					starts = Arrays.copyOf(starts, count * 2);
-				}
-				starts[count++] = i + 1;
-			}
+	private static boolean isLineBreak(@NonNull String string, int index) {
+		char c = string.charAt(index);
+		if (c == '\n') {
+			return true;
 		}
-		return Arrays.copyOf(starts, count);
+		return c == '\r' && (index + 1 >= string.length() || string.charAt(index + 1) != '\n');
+	}
+	
+	@Override
+	public <R extends StringReader> @NonNull R createSubReader(int length, @NonNull Function<String, R> creator) {
+		R reader = super.createSubReader(length, creator);
+		if (reader instanceof PositionedStringReader positioned) {
+			positioned.trackedIndex = this.trackedIndex;
+			positioned.trackedLine = this.trackedLine;
+			positioned.trackedLineStart = this.trackedLineStart;
+		}
+		return reader;
 	}
 	
 	/**
@@ -132,24 +146,43 @@ public class PositionedStringReader extends StringReader {
 	/**
 	 * Returns the position of the given index in the string of this reader.<br>
 	 * An index which points to a line break belongs to the line which is ended by the line break.<br>
+	 * <p>
+	 *     The position is computed from the last computed position,<br>
+	 *     only the characters between the last computed position and the given index are scanned.
+	 * </p>
 	 *
 	 * @param index The index
 	 * @return The position of the index
 	 * @throws IndexOutOfBoundsException If the index is negative or greater than the length of the string
 	 */
 	public @NonNull StringPosition getPosition(int index) {
-		if (0 > index || index > this.getString().length()) {
-			throw new IndexOutOfBoundsException("Index " + index + " is outside the string of length " + this.getString().length());
-		}
-		if (this.lineStarts == null) {
-			this.lineStarts = computeLineStarts(this.getString());
+		String string = this.getString();
+		if (0 > index || index > string.length()) {
+			throw new IndexOutOfBoundsException("Index " + index + " is outside the string of length " + string.length());
 		}
 		
-		int line = Arrays.binarySearch(this.lineStarts, index);
-		if (0 > line) {
-			line = -line - 2;
+		if (index >= this.trackedIndex) {
+			for (int i = this.trackedIndex; i < index; i++) {
+				if (isLineBreak(string, i)) {
+					this.trackedLine++;
+					this.trackedLineStart = i + 1;
+				}
+			}
+		} else if (index < this.trackedLineStart) {
+			for (int i = this.trackedLineStart - 1; i >= index; i--) {
+				if (isLineBreak(string, i)) {
+					this.trackedLine--;
+				}
+			}
+			
+			int lineStart = index;
+			while (lineStart > 0 && !isLineBreak(string, lineStart - 1)) {
+				lineStart--;
+			}
+			this.trackedLineStart = lineStart;
 		}
-		return new StringPosition(index, line + 1, index - this.lineStarts[line] + 1);
+		this.trackedIndex = index;
+		return new StringPosition(index, this.trackedLine, index - this.trackedLineStart + 1);
 	}
 	
 	@Override

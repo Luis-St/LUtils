@@ -19,6 +19,8 @@
 package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
+import net.luis.utils.io.reader.ScopedStringReader.DuplicationStrategy;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
@@ -36,12 +38,18 @@ class ScopedStringReaderTest {
 	
 	private static final Map<Character, StringScope> TRACKED_SCOPES = Map.of('(', PARENTHESES, '[', SQUARE_BRACKETS);
 	
+	private static @NonNull ScopedStringReader createReader(@NonNull String string, @NonNull DuplicationStrategy duplicationStrategy) {
+		return new ScopedStringReader(string, duplicationStrategy);
+	}
+	
 	@Test
 	void constructWithString() {
 		ScopedStringReader reader = new ScopedStringReader("test");
 		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
 		assertEquals(StringQuoting.DEFAULT, reader.getQuoting());
 		assertEquals('\\', reader.getEscapeCharacter());
+		assertEquals(ScopedStringReader.DEFAULT_DUPLICATION_STRATEGY, reader.getDuplicationStrategy());
+		assertEquals(DuplicationStrategy.IGNORE, ScopedStringReader.DEFAULT_DUPLICATION_STRATEGY);
 	}
 	
 	@Test
@@ -56,6 +64,50 @@ class ScopedStringReaderTest {
 	void constructWithScopes() {
 		ScopedStringReader reader = new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, Set.of(SQUARE_BRACKETS));
 		assertEquals(Set.of(SQUARE_BRACKETS), reader.getScopes());
+		assertEquals(ScopedStringReader.DEFAULT_DUPLICATION_STRATEGY, reader.getDuplicationStrategy());
+	}
+	
+	@Test
+	void constructWithStringAndDuplicationStrategy() {
+		ScopedStringReader reader = new ScopedStringReader("test", DuplicationStrategy.THROW);
+		assertEquals("test", reader.getString());
+		assertEquals('\\', reader.getEscapeCharacter());
+		assertEquals(StringQuoting.DEFAULT, reader.getQuoting());
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
+		assertEquals(DuplicationStrategy.THROW, reader.getDuplicationStrategy());
+	}
+	
+	@Test
+	void constructWithQuotingAndDuplicationStrategy() {
+		ScopedStringReader reader = new ScopedStringReader("test", null, StringQuoting.NONE, DuplicationStrategy.KEEP_LAST);
+		assertNull(reader.getEscapeCharacter());
+		assertEquals(StringQuoting.NONE, reader.getQuoting());
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
+		assertEquals(DuplicationStrategy.KEEP_LAST, reader.getDuplicationStrategy());
+	}
+	
+	@Test
+	void constructWithReaderAndDuplicationStrategy() {
+		ScopedStringReader reader = new ScopedStringReader(new java.io.StringReader("content"), DuplicationStrategy.KEEP_FIRST);
+		assertEquals("content", reader.getString());
+		assertEquals('\\', reader.getEscapeCharacter());
+		assertEquals(StringQuoting.DEFAULT, reader.getQuoting());
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, reader.getScopes());
+		assertEquals(DuplicationStrategy.KEEP_FIRST, reader.getDuplicationStrategy());
+		
+		ScopedStringReader quoted = new ScopedStringReader(new java.io.StringReader("content"), null, StringQuoting.NONE, DuplicationStrategy.THROW);
+		assertEquals("content", quoted.getString());
+		assertNull(quoted.getEscapeCharacter());
+		assertEquals(StringQuoting.NONE, quoted.getQuoting());
+		assertEquals(ScopedStringReader.DEFAULT_SCOPES, quoted.getScopes());
+		assertEquals(DuplicationStrategy.THROW, quoted.getDuplicationStrategy());
+	}
+	
+	@Test
+	void constructWithDuplicationStrategy() {
+		ScopedStringReader reader = new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, Set.of(SQUARE_BRACKETS), DuplicationStrategy.THROW);
+		assertEquals(Set.of(SQUARE_BRACKETS), reader.getScopes());
+		assertEquals(DuplicationStrategy.THROW, reader.getDuplicationStrategy());
 	}
 	
 	@Test
@@ -67,16 +119,31 @@ class ScopedStringReaderTest {
 		
 		ScopedStringReader scoped = new ScopedStringReader(new java.io.StringReader("content"), '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES));
 		assertEquals(Set.of(PARENTHESES), scoped.getScopes());
+		assertEquals(ScopedStringReader.DEFAULT_DUPLICATION_STRATEGY, scoped.getDuplicationStrategy());
+		
+		ScopedStringReader strategy = new ScopedStringReader(new java.io.StringReader("content"), '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES), DuplicationStrategy.KEEP_LAST);
+		assertEquals("content", strategy.getString());
+		assertEquals(DuplicationStrategy.KEEP_LAST, strategy.getDuplicationStrategy());
 	}
 	
 	@Test
 	void constructWithNullArguments() {
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader((String) null));
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, (Set<StringScope>) null));
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
 		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', StringQuoting.DEFAULT, null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', StringQuoting.DEFAULT, (Set<StringScope>) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((String) null, DuplicationStrategy.THROW));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", (DuplicationStrategy) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', null, DuplicationStrategy.THROW));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, (DuplicationStrategy) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader("test", '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES), null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null, DuplicationStrategy.THROW));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), (DuplicationStrategy) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', null, DuplicationStrategy.THROW));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', StringQuoting.DEFAULT, (DuplicationStrategy) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader(new java.io.StringReader("test"), '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES), null));
 	}
 	
 	@Test
@@ -189,12 +256,13 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void createElementReaderUsesSameConfiguration() {
-		ScopedStringReader reader = new ScopedStringReader("x", null, StringQuoting.SINGLE_ONLY, Set.of(PARENTHESES));
+		ScopedStringReader reader = new ScopedStringReader("x", null, StringQuoting.SINGLE_ONLY, Set.of(PARENTHESES), DuplicationStrategy.KEEP_FIRST);
 		ScopedStringReader element = reader.createElementReader("y");
 		assertEquals("y", element.getString());
 		assertNull(element.getEscapeCharacter());
 		assertEquals(StringQuoting.SINGLE_ONLY, element.getQuoting());
 		assertEquals(Set.of(PARENTHESES), element.getScopes());
+		assertEquals(DuplicationStrategy.KEEP_FIRST, element.getDuplicationStrategy());
 	}
 	
 	@Test
@@ -333,6 +401,46 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
+	void readSetWithFactoryUsesDuplicationStrategy() {
+		ScopedStringReader reader = createReader("(a, b, a)", DuplicationStrategy.KEEP_LAST);
+		Set<String> set = reader.readSet(StringReader::new, StringReader::readRemaining);
+		assertEquals(List.of("b", "a"), new ArrayList<>(set));
+	}
+	
+	@Test
+	void readSetWithDuplicationStrategyIgnore() {
+		Set<Integer> set = createReader("(1, 2, 1)", DuplicationStrategy.IGNORE).readSet(ValueStringReader::readInt);
+		assertEquals(List.of(1, 2), new ArrayList<>(set));
+	}
+	
+	@Test
+	void readSetWithDuplicationStrategyKeepFirst() {
+		Set<Integer> set = createReader("(1, 2, 1)", DuplicationStrategy.KEEP_FIRST).readSet(ValueStringReader::readInt);
+		assertEquals(List.of(1, 2), new ArrayList<>(set));
+	}
+	
+	@Test
+	void readSetWithDuplicationStrategyKeepLast() {
+		Set<Integer> set = createReader("(1, 2, 1, 3)", DuplicationStrategy.KEEP_LAST).readSet(ValueStringReader::readInt);
+		assertEquals(List.of(2, 1, 3), new ArrayList<>(set));
+	}
+	
+	@Test
+	void readSetWithDuplicationStrategyThrow() {
+		ScopedStringReader reader = createReader("(1,\n 2,\n 1)", DuplicationStrategy.THROW);
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readSet(ValueStringReader::readInt));
+		assertTrue(exception.getMessage().contains("Duplicate element '1'"));
+		assertTrue(exception.getMessage().endsWith("at line 3, column 2"));
+		assertDoesNotThrow(() -> reader.canRead());
+	}
+	
+	@Test
+	void readSetWithDuplicationStrategyThrowWithoutDuplicates() {
+		Set<Integer> set = createReader("(1, 2, 3)", DuplicationStrategy.THROW).readSet(ValueStringReader::readInt);
+		assertEquals(List.of(1, 2, 3), new ArrayList<>(set));
+	}
+	
+	@Test
 	void readMapEmpty() {
 		assertEquals(Map.of(), new ScopedStringReader("{}").readMap(StringReader::readRemaining, StringReader::readRemaining));
 	}
@@ -362,6 +470,67 @@ class ScopedStringReaderTest {
 	void readMapWithFactory() {
 		ScopedStringReader reader = new ScopedStringReader("{a=1}");
 		assertEquals(Map.of("a", "1"), reader.readMap(StringReader::new, StringReader::readRemaining, StringReader::readRemaining));
+	}
+	
+	@Test
+	void readMapWithFactoryUsesDuplicationStrategy() {
+		ScopedStringReader reader = createReader("{a=1, a=2}", DuplicationStrategy.KEEP_FIRST);
+		assertEquals(Map.of("a", "1"), reader.readMap(StringReader::new, StringReader::readRemaining, StringReader::readRemaining));
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyIgnore() {
+		ScopedStringReader reader = createReader("{a=1, b=2, a=3}", DuplicationStrategy.IGNORE);
+		Map<String, String> map = reader.readMap(StringReader::readRemaining, StringReader::readRemaining);
+		assertEquals(List.of(Map.entry("a", "3"), Map.entry("b", "2")), new ArrayList<>(map.entrySet()));
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyKeepFirst() {
+		ScopedStringReader reader = createReader("{a=1, b=2, a=3}", DuplicationStrategy.KEEP_FIRST);
+		Map<String, String> map = reader.readMap(StringReader::readRemaining, StringReader::readRemaining);
+		assertEquals(List.of(Map.entry("a", "1"), Map.entry("b", "2")), new ArrayList<>(map.entrySet()));
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyKeepLast() {
+		ScopedStringReader reader = createReader("{a=1, b=2, a=3}", DuplicationStrategy.KEEP_LAST);
+		Map<String, String> map = reader.readMap(StringReader::readRemaining, StringReader::readRemaining);
+		assertEquals(List.of(Map.entry("b", "2"), Map.entry("a", "3")), new ArrayList<>(map.entrySet()));
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyThrow() {
+		ScopedStringReader reader = createReader("{\n  a=1,\n  a=2\n}", DuplicationStrategy.THROW);
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readMap(StringReader::readRemaining, StringReader::readRemaining));
+		assertTrue(exception.getMessage().contains("Duplicate key 'a'"));
+		assertTrue(exception.getMessage().endsWith("at line 3, column 3"));
+		assertDoesNotThrow(() -> reader.canRead());
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyThrowWithoutDuplicates() {
+		ScopedStringReader reader = createReader("{a=1, b=2}", DuplicationStrategy.THROW);
+		Map<String, String> map = reader.readMap(StringReader::readRemaining, StringReader::readRemaining);
+		assertEquals(List.of(Map.entry("a", "1"), Map.entry("b", "2")), new ArrayList<>(map.entrySet()));
+	}
+	
+	@Test
+	void readMapWithDuplicationStrategyComparesParsedKeys() {
+		ScopedStringReader reader = createReader("{1=a, 0x1=b}", DuplicationStrategy.THROW);
+		InvalidStringException exception = assertThrows(InvalidStringException.class, () -> reader.readMap(ValueStringReader::readNumber, StringReader::readRemaining));
+		assertTrue(exception.getMessage().contains("Duplicate key '1'"));
+	}
+	
+	@Test
+	void readObjectNestedUsesDuplicationStrategy() {
+		ScopedStringReader reader = createReader("[{a=1, a=2}, (x, x)]", DuplicationStrategy.THROW);
+		InvalidStringException exception = assertThrows(InvalidStringException.class, reader::readObject);
+		assertTrue(exception.getMessage().contains("Duplicate key 'a'"));
+		
+		ScopedStringReader keepLast = createReader("[{a=1, b=2, a=3}]", DuplicationStrategy.KEEP_LAST);
+		Map<?, ?> map = (Map<?, ?>) ((List<?>) keepLast.readObject()).getFirst();
+		assertEquals(List.of("b", "a"), new ArrayList<>(map.keySet()));
 	}
 	
 	@Test
@@ -433,6 +602,13 @@ class ScopedStringReaderTest {
 	void unequalReadersWithOtherScopes() {
 		ScopedStringReader reader = new ScopedStringReader("abc");
 		assertNotEquals(reader, new ScopedStringReader("abc", '\\', StringQuoting.DEFAULT, Set.of(PARENTHESES)));
+	}
+	
+	@Test
+	void unequalReadersWithOtherDuplicationStrategy() {
+		ScopedStringReader reader = new ScopedStringReader("abc");
+		assertEquals(reader, createReader("abc", DuplicationStrategy.IGNORE));
+		assertNotEquals(reader, createReader("abc", DuplicationStrategy.THROW));
 	}
 	
 	@Test

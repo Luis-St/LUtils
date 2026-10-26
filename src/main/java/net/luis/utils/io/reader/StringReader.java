@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * <ul>
  *     <li>{@link PositionedStringReader} tracks the line and column of the reader</li>
  *     <li>{@link QuotedStringReader} handles quoted parts</li>
- *     <li>{@link ValueStringReader} reads booleans, numbers and objects</li>
+ *     <li>{@link ValueStringReader} reads booleans, numbers, and objects</li>
  *     <li>{@link ScopedStringReader} handles scopes and reads collections</li>
  * </ul>
  * <p>
@@ -178,6 +178,7 @@ public class StringReader implements AutoCloseable {
 	 */
 	private static @NonNull String readContent(@NonNull Reader reader) {
 		Objects.requireNonNull(reader, "Reader must not be null");
+		
 		try {
 			return FileUtils.readString(reader);
 		} catch (IOException e) {
@@ -195,6 +196,21 @@ public class StringReader implements AutoCloseable {
 	 */
 	private static boolean matches(char actual, char expected, boolean caseSensitive) {
 		return caseSensitive ? actual == expected : Character.toLowerCase(actual) == Character.toLowerCase(expected);
+	}
+	
+	/**
+	 * Ensures that this reader can be interacted with.<br>
+	 *
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 */
+	protected void ensureUsable() {
+		if (this.closed) {
+			throw new IllegalStateException("Interactions on a closed sub reader are not allowed");
+		}
+		if (this.child != null) {
+			throw new ConcurrentInteractionException("Interactions on the parent reader are not allowed while a child reader is active");
+		}
 	}
 	
 	/**
@@ -264,21 +280,6 @@ public class StringReader implements AutoCloseable {
 		subReader.parent = this;
 		this.child = reader;
 		return reader;
-	}
-	
-	/**
-	 * Ensures that this reader can be interacted with.<br>
-	 *
-	 * @throws IllegalStateException If this reader is a closed sub reader
-	 * @throws ConcurrentInteractionException If a child reader is active
-	 */
-	protected void ensureUsable() {
-		if (this.closed) {
-			throw new IllegalStateException("Interactions on a closed sub reader are not allowed");
-		}
-		if (this.child != null) {
-			throw new ConcurrentInteractionException("Interactions on the parent reader are not allowed while a child reader is active");
-		}
 	}
 	
 	/**
@@ -393,6 +394,8 @@ public class StringReader implements AutoCloseable {
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
 	public char read() {
+		this.ensureUsable();
+		
 		char c = this.peek();
 		this.index++;
 		return c;
@@ -485,9 +488,11 @@ public class StringReader implements AutoCloseable {
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
 	public char peek() {
+		this.ensureUsable();
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a character but reached the end of the readable part at index " + this.index);
 		}
+		
 		return this.string.charAt(this.index);
 	}
 	
@@ -878,7 +883,6 @@ public class StringReader implements AutoCloseable {
 	 */
 	public @NonNull String readUntil(char @NonNull ... terminators) {
 		this.ensureUsable();
-		
 		return this.readUntil(this.validateTerminators(terminators)::contains, false);
 	}
 	
@@ -908,7 +912,6 @@ public class StringReader implements AutoCloseable {
 	 */
 	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
 		this.ensureUsable();
-		
 		return this.readUntil(this.validateTerminators(terminators)::contains, true);
 	}
 	
@@ -938,7 +941,6 @@ public class StringReader implements AutoCloseable {
 	 */
 	public @NonNull String readUntilSkip(char @NonNull ... terminators) {
 		this.ensureUsable();
-		
 		return this.readUntilSkip(this.validateTerminators(terminators)::contains);
 	}
 	
@@ -1365,6 +1367,8 @@ public class StringReader implements AutoCloseable {
 	}
 	//endregion
 	
+	//region Internal
+	
 	/**
 	 * A tracker for nested parts of a string, such as quoted parts or scopes.<br>
 	 * <p>
@@ -1397,4 +1401,5 @@ public class StringReader implements AutoCloseable {
 		 */
 		default void finish() {}
 	}
+	//endregion
 }

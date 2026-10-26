@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,15 +54,23 @@ public class ScopedStringReader extends ValueStringReader {
 	 * The scopes which are handled by default.<br>
 	 */
 	public static final Set<StringScope> DEFAULT_SCOPES = Set.of(PARENTHESES, CURLY_BRACKETS, SQUARE_BRACKETS, ANGLE_BRACKETS);
+	/**
+	 * The strategy which is used by default to handle duplicates in sets and maps.<br>
+	 */
+	public static final DuplicationStrategy DEFAULT_DUPLICATION_STRATEGY = DuplicationStrategy.IGNORE;
 	
 	/**
 	 * The scopes handled by this reader, mapped by their opening character.<br>
 	 */
 	private final Map<Character, StringScope> scopes;
+	/**
+	 * The strategy used to handle duplicates in sets and maps.<br>
+	 */
+	private final DuplicationStrategy duplicationStrategy;
 	
 	/**
 	 * Constructs a new scoped string reader with the given string.<br>
-	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting} and the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting}, the {@link #DEFAULT_SCOPES default scopes} and the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
@@ -71,8 +80,20 @@ public class ScopedStringReader extends ValueStringReader {
 	}
 	
 	/**
-	 * Constructs a new scoped string reader with the given string, escape character and quoting.<br>
-	 * The reader uses the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 * Constructs a new scoped string reader with the given string and duplication strategy.<br>
+	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting} and the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 *
+	 * @param string The string to read from
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the string or the duplication strategy is null
+	 */
+	public ScopedStringReader(@NonNull String string, @NonNull DuplicationStrategy duplicationStrategy) {
+		this(string, DEFAULT_ESCAPE_CHARACTER, StringQuoting.DEFAULT, duplicationStrategy);
+	}
+	
+	/**
+	 * Constructs a new scoped string reader with the given string, escape character, and quoting.<br>
+	 * The reader uses the {@link #DEFAULT_SCOPES default scopes} and the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param string The string to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -84,7 +105,22 @@ public class ScopedStringReader extends ValueStringReader {
 	}
 	
 	/**
-	 * Constructs a new scoped string reader with the given string, escape character, quoting and scopes.<br>
+	 * Constructs a new scoped string reader with the given string, escape character, quoting, and duplication strategy.<br>
+	 * The reader uses the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 *
+	 * @param string The string to read from
+	 * @param escapeCharacter The escape character, or null to disable escaping
+	 * @param quoting The quotes handled by the reader
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the string, quoting or the duplication strategy is null
+	 */
+	public ScopedStringReader(@NonNull String string, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull DuplicationStrategy duplicationStrategy) {
+		this(string, escapeCharacter, quoting, DEFAULT_SCOPES, duplicationStrategy);
+	}
+	
+	/**
+	 * Constructs a new scoped string reader with the given string, escape character, quoting, and scopes.<br>
+	 * The reader uses the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param string The string to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -94,14 +130,30 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws IllegalArgumentException If two scopes have the same opening character
 	 */
 	public ScopedStringReader(@NonNull String string, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull Set<StringScope> scopes) {
+		this(string, escapeCharacter, quoting, scopes, DEFAULT_DUPLICATION_STRATEGY);
+	}
+	
+	/**
+	 * Constructs a new scoped string reader with the given string, escape character, quoting, scopes, and duplication strategy.<br>
+	 *
+	 * @param string The string to read from
+	 * @param escapeCharacter The escape character, or null to disable escaping
+	 * @param quoting The quotes handled by the reader
+	 * @param scopes The scopes handled by the reader
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the string, quoting, the set of scopes, any scope or the duplication strategy is null
+	 * @throws IllegalArgumentException If two scopes have the same opening character
+	 */
+	public ScopedStringReader(@NonNull String string, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull Set<StringScope> scopes, @NonNull DuplicationStrategy duplicationStrategy) {
 		super(string, escapeCharacter, quoting);
 		this.scopes = createScopes(scopes);
+		this.duplicationStrategy = Objects.requireNonNull(duplicationStrategy, "Duplication strategy must not be null");
 	}
 	
 	/**
 	 * Constructs a new scoped string reader from the given reader.<br>
 	 * The reader is closed after reading the string.<br>
-	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting} and the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting}, the {@link #DEFAULT_SCOPES default scopes} and the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param reader The reader to read from
 	 * @throws NullPointerException If the reader is null
@@ -112,9 +164,23 @@ public class ScopedStringReader extends ValueStringReader {
 	}
 	
 	/**
+	 * Constructs a new scoped string reader from the given reader with the given duplication strategy.<br>
+	 * The reader is closed after reading the string.<br>
+	 * The reader uses the {@link #DEFAULT_ESCAPE_CHARACTER default escape character}, the {@link StringQuoting#DEFAULT default quoting} and the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 *
+	 * @param reader The reader to read from
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the reader or the duplication strategy is null
+	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 */
+	public ScopedStringReader(@NonNull Reader reader, @NonNull DuplicationStrategy duplicationStrategy) {
+		this(reader, DEFAULT_ESCAPE_CHARACTER, StringQuoting.DEFAULT, duplicationStrategy);
+	}
+	
+	/**
 	 * Constructs a new scoped string reader from the given reader with the given escape character and quoting.<br>
 	 * The reader is closed after reading the string.<br>
-	 * The reader uses the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 * The reader uses the {@link #DEFAULT_SCOPES default scopes} and the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param reader The reader to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -127,8 +193,25 @@ public class ScopedStringReader extends ValueStringReader {
 	}
 	
 	/**
+	 * Constructs a new scoped string reader from the given reader with the given escape character, quoting and duplication strategy.<br>
+	 * The reader is closed after reading the string.<br>
+	 * The reader uses the {@link #DEFAULT_SCOPES default scopes}.<br>
+	 *
+	 * @param reader The reader to read from
+	 * @param escapeCharacter The escape character, or null to disable escaping
+	 * @param quoting The quotes handled by the reader
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the reader, quoting or the duplication strategy is null
+	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 */
+	public ScopedStringReader(@NonNull Reader reader, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull DuplicationStrategy duplicationStrategy) {
+		this(reader, escapeCharacter, quoting, DEFAULT_SCOPES, duplicationStrategy);
+	}
+	
+	/**
 	 * Constructs a new scoped string reader from the given reader with the given escape character, quoting and scopes.<br>
 	 * The reader is closed after reading the string.<br>
+	 * The reader uses the {@link #DEFAULT_DUPLICATION_STRATEGY default duplication strategy}.<br>
 	 *
 	 * @param reader The reader to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -139,8 +222,26 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
 	 */
 	public ScopedStringReader(@NonNull Reader reader, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull Set<StringScope> scopes) {
+		this(reader, escapeCharacter, quoting, scopes, DEFAULT_DUPLICATION_STRATEGY);
+	}
+	
+	/**
+	 * Constructs a new scoped string reader from the given reader with the given escape character, quoting, scopes and duplication strategy.<br>
+	 * The reader is closed after reading the string.<br>
+	 *
+	 * @param reader The reader to read from
+	 * @param escapeCharacter The escape character, or null to disable escaping
+	 * @param quoting The quotes handled by the reader
+	 * @param scopes The scopes handled by the reader
+	 * @param duplicationStrategy The strategy used to handle duplicates in sets and maps
+	 * @throws NullPointerException If the reader, quoting, the set of scopes, any scope or the duplication strategy is null
+	 * @throws IllegalArgumentException If two scopes have the same opening character
+	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 */
+	public ScopedStringReader(@NonNull Reader reader, @Nullable Character escapeCharacter, @NonNull StringQuoting quoting, @NonNull Set<StringScope> scopes, @NonNull DuplicationStrategy duplicationStrategy) {
 		super(reader, escapeCharacter, quoting);
 		this.scopes = createScopes(scopes);
+		this.duplicationStrategy = Objects.requireNonNull(duplicationStrategy, "Duplication strategy must not be null");
 	}
 	
 	/**
@@ -172,6 +273,14 @@ public class ScopedStringReader extends ValueStringReader {
 		return Set.copyOf(this.scopes.values());
 	}
 	
+	/**
+	 * Returns the strategy used to handle duplicates in sets and maps.<br>
+	 * @return The duplication strategy
+	 */
+	public @NonNull DuplicationStrategy getDuplicationStrategy() {
+		return this.duplicationStrategy;
+	}
+	
 	@Override
 	protected @NonNull NestingTracker createTracker() {
 		return new ScopeTracker(this.getQuoting(), this.scopes);
@@ -179,7 +288,7 @@ public class ScopedStringReader extends ValueStringReader {
 	
 	/**
 	 * Creates the reader which reads an element of a collection.<br>
-	 * The created reader uses the same escape character, quoting and scopes as this reader.<br>
+	 * The created reader uses the same escape character, quoting, scopes and duplication strategy as this reader.<br>
 	 * Subclasses can override this method to change the default element reader.<br>
 	 *
 	 * @param string The string to read from
@@ -187,7 +296,7 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws NullPointerException If the string is null
 	 */
 	protected @NonNull ScopedStringReader createElementReader(@NonNull String string) {
-		return new ScopedStringReader(string, this.getEscapeCharacter(), this.getQuoting(), this.getScopes());
+		return new ScopedStringReader(string, this.getEscapeCharacter(), this.getQuoting(), this.getScopes(), this.duplicationStrategy);
 	}
 	
 	/**
@@ -254,7 +363,7 @@ public class ScopedStringReader extends ValueStringReader {
 	
 	/**
 	 * Reads the next value as the best matching object.<br>
-	 * In addition to the types supported by ,<br>
+	 * In addition to the types supported by {@link ValueStringReader#readObject()},<br>
 	 * this method can read collections, which are determined by their opening character:<br>
 	 * <ul>
 	 *     <li>
@@ -305,6 +414,85 @@ public class ScopedStringReader extends ValueStringReader {
 	}
 	
 	/**
+	 * Reads a collection like object from the string.<br>
+	 * <p>
+	 *     The collection is defined by the opening and closing character of the scope.<br>
+	 *     The elements are separated by a comma, empty elements and surrounding whitespaces are ignored.<br>
+	 *     Separators in nested parts and escaped separators are ignored.
+	 * </p>
+	 * <p>
+	 *     Each element is read by a sub reader created by the given factory.<br>
+	 *     The sub reader can only read the characters of its element.<br>
+	 *     The parsed element is passed to the given action in order.<br>
+	 *     While the action is called, this reader is positioned at the start of the element,<br>
+	 *     so exceptions thrown by the action can describe the location of the element.<br>
+	 *     The reader is positioned after the closing character of the scope.
+	 * </p>
+	 *
+	 * @param scope The scope with the opening and closing character
+	 * @param factory The factory which creates the element readers
+	 * @param parser The parser to parse the elements
+	 * @param action The action which receives the parsed elements
+	 * @param <R> The type of the element readers
+	 * @param <T> The type of the elements
+	 * @throws NullPointerException If the scope, factory, parser, or action is null
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws IllegalArgumentException If the next character is not the opening character of the scope or the factory does not create a new reader of the same string
+	 * @throws InvalidStringException If there are no more characters to read, the scope is not closed or a nested part is invalid
+	 */
+	private <R extends StringReader, T> void readCollection(@NonNull StringScope scope, @NonNull Function<String, R> factory, @NonNull Function<? super R, T> parser, @NonNull Consumer<? super T> action) {
+		Objects.requireNonNull(scope, "Scope must not be null");
+		Objects.requireNonNull(factory, "Element reader factory must not be null");
+		Objects.requireNonNull(parser, "Element parser must not be null");
+		Objects.requireNonNull(action, "Element action must not be null");
+		this.ensureUsable();
+		if (!this.canRead()) {
+			throw new InvalidStringException(this.withLocation("Expected '" + scope.open() + "' but found nothing"));
+		}
+		
+		char next = this.peek();
+		if (next != scope.open()) {
+			throw new IllegalArgumentException("Expected '" + scope.open() + "' but got '" + next + "'");
+		}
+		this.skip();
+		
+		while (true) {
+			this.skipWhitespaces();
+			if (!this.canRead()) {
+				throw new InvalidStringException(this.withLocation("Invalid scope, expected '" + scope.close() + "'"));
+			}
+			
+			char c = this.peek();
+			if (c == scope.close()) {
+				this.skip();
+				return;
+			}
+			if (c == ',') {
+				this.skip();
+				continue;
+			}
+			
+			int start = this.getIndex();
+			String raw = this.readUntil(',', scope.close());
+			if (!this.canRead()) {
+				throw new InvalidStringException(this.withLocation("Invalid scope, expected '" + scope.close() + "'"));
+			}
+			
+			int end = this.getIndex();
+			int length = end - start - (raw.length() - raw.stripTrailing().length());
+			this.setIndex(start);
+			T element;
+			try (R reader = this.createSubReader(length, factory)) {
+				element = parser.apply(reader);
+			}
+			this.setIndex(start);
+			action.accept(element);
+			this.setIndex(end);
+		}
+	}
+	
+	/**
 	 * Reads a list from the string.<br>
 	 * The elements are read by readers created by {@link #createElementReader(String)}.<br>
 	 *
@@ -345,7 +533,9 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws InvalidStringException If an error occurs while reading the list
 	 */
 	public <R extends StringReader, T> @NonNull List<T> readList(@NonNull Function<String, R> factory, @NonNull Function<? super R, T> parser) {
-		return Lists.newArrayList(this.readCollection(SQUARE_BRACKETS, factory, parser));
+		List<T> list = Lists.newArrayList();
+		this.readCollection(SQUARE_BRACKETS, factory, parser, list::add);
+		return list;
 	}
 	
 	/**
@@ -359,7 +549,7 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the next character is not an opening parenthesis
-	 * @throws InvalidStringException If an error occurs while reading the set
+	 * @throws InvalidStringException If an error occurs while reading the set or a duplicate element is read and the duplication strategy is {@link DuplicationStrategy#THROW}
 	 * @see #readSet(Function, Function)
 	 */
 	public <T> @NonNull Set<T> readSet(@NonNull Function<ScopedStringReader, T> parser) {
@@ -371,7 +561,7 @@ public class ScopedStringReader extends ValueStringReader {
 	 * <p>
 	 *     The set is defined by parentheses.<br>
 	 *     The elements are separated by a comma, empty elements and surrounding whitespaces are ignored.<br>
-	 *     Duplicates are ignored, the order of the elements is kept.
+	 *     Duplicate elements are handled by the {@link #getDuplicationStrategy() duplication strategy} of this reader, the order of the elements is kept.
 	 * </p>
 	 * <p>
 	 *     Each element is read by a sub reader created by the given factory.<br>
@@ -387,10 +577,13 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the next character is not an opening parenthesis or the factory does not create a new reader of the same string
-	 * @throws InvalidStringException If an error occurs while reading the set
+	 * @throws InvalidStringException If an error occurs while reading the set or a duplicate element is read and the duplication strategy is {@link DuplicationStrategy#THROW}
+	 * @see DuplicationStrategy
 	 */
 	public <R extends StringReader, T> @NonNull Set<T> readSet(@NonNull Function<String, R> factory, @NonNull Function<? super R, T> parser) {
-		return Sets.newLinkedHashSet(this.readCollection(PARENTHESES, factory, parser));
+		Set<T> set = Sets.newLinkedHashSet();
+		this.readCollection(PARENTHESES, factory, parser, element -> this.addElement(set, element));
+		return set;
 	}
 	
 	/**
@@ -406,7 +599,7 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the next character is not an opening curly bracket
-	 * @throws InvalidStringException If an error occurs while reading the map
+	 * @throws InvalidStringException If an error occurs while reading the map or a duplicate key is read and the duplication strategy is {@link DuplicationStrategy#THROW}
 	 * @see #readMap(Function, Function, Function)
 	 */
 	public <K, V> @NonNull Map<K, V> readMap(@NonNull Function<ScopedStringReader, K> keyParser, @NonNull Function<ScopedStringReader, V> valueParser) {
@@ -418,8 +611,8 @@ public class ScopedStringReader extends ValueStringReader {
 	 * <p>
 	 *     The map is defined by curly brackets.<br>
 	 *     The entries are separated by a comma, empty entries and surrounding whitespaces are ignored.<br>
-	 *     The key and value of an entry are separated by the first equal sign ('=') outside of nested parts.<br>
-	 *     If a key is defined multiple times, the last value is used.
+	 *     The key and value of an entry are separated by the first equal sign ('=') outside nested parts.<br>
+	 *     Duplicate keys are handled by the {@link #getDuplicationStrategy() duplication strategy} of this reader, the order of the entries is kept.
 	 * </p>
 	 * <p>
 	 *     Each key and value is read by a sub reader created by the given factory.<br>
@@ -433,11 +626,12 @@ public class ScopedStringReader extends ValueStringReader {
 	 * @param <R> The type of the key and value readers
 	 * @param <K> The type of the keys
 	 * @param <V> The type of the values
-	 * @throws NullPointerException If the factory, key or value parser is null
+	 * @throws NullPointerException If the factory, key, or value parser is null
 	 * @throws ConcurrentInteractionException If a child reader is active
 	 * @throws IllegalStateException If this reader is a closed sub reader
 	 * @throws IllegalArgumentException If the next character is not an opening curly bracket or the factory does not create a new reader of the same string
-	 * @throws InvalidStringException If an error occurs while reading the map or an entry has no equal sign
+	 * @throws InvalidStringException If an error occurs while reading the map, an entry has no equal sign or a duplicate key is read and the duplication strategy is {@link DuplicationStrategy#THROW}
+	 * @see DuplicationStrategy
 	 */
 	public <R extends StringReader, K, V> @NonNull Map<K, V> readMap(@NonNull Function<String, R> factory, @NonNull Function<? super R, K> keyParser, @NonNull Function<? super R, V> valueParser) {
 		Objects.requireNonNull(factory, "Map reader factory must not be null");
@@ -445,161 +639,94 @@ public class ScopedStringReader extends ValueStringReader {
 		Objects.requireNonNull(valueParser, "Map value parser must not be null");
 		this.ensureUsable();
 		
-		List<Range> entries = this.readElementRanges(CURLY_BRACKETS);
-		int end = this.getIndex();
-		
 		Map<K, V> map = Maps.newLinkedHashMap();
-		for (Range entry : entries) {
-			int separator = this.indexOf(entry.start(), entry.end(), '=');
-			if (separator == -1) {
-				this.setIndex(entry.start());
-				throw new InvalidStringException(this.withLocation("Invalid map entry, expected 'key=value' but got: '" + entry.of(this.getString()) + "'"));
+		this.readCollection(CURLY_BRACKETS, this::createElementReader, entryReader -> {
+			int start = entryReader.getIndex();
+			String rawKey = entryReader.readUntil('=');
+			if (!entryReader.canRead()) {
+				String content = entryReader.getString().substring(start, entryReader.getIndex());
+				entryReader.setIndex(start);
+				throw new InvalidStringException(entryReader.withLocation("Invalid map entry, expected 'key=value' but got: '" + content + "'"));
 			}
 			
-			K key = this.readRange(this.trim(entry.start(), separator), factory, keyParser);
-			V value = this.readRange(this.trim(separator + 1, entry.end()), factory, valueParser);
-			map.put(key, value);
-		}
-		this.setIndex(end);
+			int separator = entryReader.getIndex();
+			int keyLength = separator - start - (rawKey.length() - rawKey.stripTrailing().length());
+			entryReader.setIndex(start);
+			K key;
+			try (R reader = entryReader.createSubReader(keyLength, factory)) {
+				key = keyParser.apply(reader);
+			}
+			
+			entryReader.setIndex(separator + 1);
+			entryReader.skipWhitespaces();
+			V value;
+			try (R reader = entryReader.createSubReader(factory)) {
+				value = valueParser.apply(reader);
+			}
+			return Maps.immutableEntry(key, value);
+		}, entry -> this.putEntry(map, entry.getKey(), entry.getValue()));
 		return map;
 	}
 	
 	/**
-	 * Reads a collection like object from the string.<br>
+	 * Adds the given element to the given set using the duplication strategy of this reader.<br>
+	 * This reader must be positioned at the start of the element.<br>
 	 *
-	 * @param scope The scope with the opening and closing character
-	 * @param factory The factory which creates the element readers
-	 * @param parser The parser to parse the elements
-	 * @return The read elements in order
-	 * @param <R> The type of the element readers
+	 * @param set The set to add the element to
+	 * @param element The element to add
 	 * @param <T> The type of the elements
-	 * @throws NullPointerException If the scope, factory or parser is null
-	 * @throws ConcurrentInteractionException If a child reader is active
-	 * @throws IllegalStateException If this reader is a closed sub reader
-	 * @throws IllegalArgumentException If the next character is not the opening character of the scope
-	 * @throws InvalidStringException If an error occurs while reading the collection
+	 * @throws NullPointerException If the set or the strategy is null
+	 * @throws InvalidStringException If the set already contains the element and the strategy is {@link DuplicationStrategy#THROW}
 	 */
-	private <R extends StringReader, T> @NonNull List<T> readCollection(@NonNull StringScope scope, @NonNull Function<String, R> factory, @NonNull Function<? super R, T> parser) {
-		Objects.requireNonNull(scope, "Scope must not be null");
-		Objects.requireNonNull(factory, "Element reader factory must not be null");
-		Objects.requireNonNull(parser, "Element parser must not be null");
-		this.ensureUsable();
+	private <T> void addElement(@NonNull Set<T> set, @Nullable T element) {
+		Objects.requireNonNull(set, "Set must not be null");
 		
-		List<Range> elements = this.readElementRanges(scope);
-		int end = this.getIndex();
-		
-		List<T> collection = new ArrayList<>();
-		for (Range element : elements) {
-			collection.add(this.readRange(element, factory, parser));
-		}
-		this.setIndex(end);
-		return collection;
-	}
-	
-	/**
-	 * Reads the given scope and splits its content into the ranges of its comma separated elements.<br>
-	 * The reader is positioned after the closing character of the scope.<br>
-	 *
-	 * @param scope The scope of the collection
-	 * @return The trimmed ranges of the non-empty elements
-	 * @throws NullPointerException If the scope is null
-	 * @throws ConcurrentInteractionException If a child reader is active
-	 * @throws IllegalStateException If this reader is a closed sub reader
-	 * @throws IllegalArgumentException If the next character is not the opening character of the scope
-	 * @throws InvalidStringException If there are no more characters to read or the scope is invalid
-	 */
-	private @NonNull List<Range> readElementRanges(@NonNull StringScope scope) {
-		Objects.requireNonNull(scope, "Scope must not be null");
-		if (!this.canRead()) {
-			throw new InvalidStringException(this.withLocation("Expected '" + scope.open() + "' but found nothing"));
-		}
-		
-		int start = this.getIndex();
-		this.readScope(scope);
-		int end = this.getIndex() - 1;
-		
-		List<Range> ranges = new ArrayList<>();
-		int partStart = start + 1;
-		while (partStart <= end) {
-			int separator = this.indexOf(partStart, end, ',');
-			int partEnd = separator == -1 ? end : separator;
-			
-			Range range = this.trim(partStart, partEnd);
-			if (range.end() > range.start()) {
-				ranges.add(range);
+		switch (this.duplicationStrategy) {
+			case IGNORE, KEEP_FIRST -> set.add(element);
+			case KEEP_LAST -> {
+				set.remove(element);
+				set.add(element);
 			}
-			partStart = partEnd + 1;
-		}
-		return ranges;
-	}
-	
-	/**
-	 * Finds the first occurrence of the given separator in the given range of the string.<br>
-	 * Escaped separators and separators in nested parts are ignored.<br>
-	 *
-	 * @param from The inclusive start index of the range
-	 * @param to The exclusive end index of the range
-	 * @param separator The separator to find
-	 * @return The index of the separator, or -1 if the separator is not found
-	 * @throws InvalidStringException If a nested part in the range is not closed
-	 */
-	private int indexOf(int from, int to, char separator) {
-		NestingTracker tracker = this.createTracker();
-		boolean escaped = false;
-		for (int i = from; i < to; i++) {
-			char c = this.getString().charAt(i);
-			if (escaped) {
-				escaped = false;
-			} else if (this.isEscapeCharacter(c)) {
-				escaped = true;
-			} else if (!tracker.isNested() && c == separator) {
-				return i;
-			} else {
-				tracker.accept(c);
+			case THROW -> {
+				if (!set.add(element)) {
+					throw new InvalidStringException(this.withLocation("Duplicate element '" + element + "' in set"));
+				}
 			}
 		}
-		tracker.finish();
-		return -1;
 	}
 	
 	/**
-	 * Removes the leading and trailing whitespaces from the given range of the string.<br>
+	 * Puts the given entry into the given map using the duplication strategy of this reader.<br>
+	 * This reader must be positioned at the start of the entry.<br>
 	 *
-	 * @param from The inclusive start index of the range
-	 * @param to The exclusive end index of the range
-	 * @return The trimmed range
+	 * @param map The map to put the entry into
+	 * @param key The key of the entry
+	 * @param value The value of the entry
+	 * @param <K> The type of the keys
+	 * @param <V> The type of the values
+	 * @throws NullPointerException If the map or the strategy is nul
+	 * @throws InvalidStringException If the map already contains the key and the strategy is {@link DuplicationStrategy#THROW}
 	 */
-	private @NonNull Range trim(int from, int to) {
-		String string = this.getString();
-		while (from < to && Character.isWhitespace(string.charAt(from))) {
-			from++;
-		}
-		while (to > from && Character.isWhitespace(string.charAt(to - 1))) {
-			to--;
-		}
-		return new Range(from, to);
-	}
-	
-	/**
-	 * Parses the given range of the string with a sub reader created by the given factory.<br>
-	 *
-	 * @param range The range to parse
-	 * @param factory The factory which creates the sub reader
-	 * @param parser The parser
-	 * @return The parsed value
-	 * @param <R> The type of the sub reader
-	 * @param <T> The type of the value
-	 * @throws NullPointerException If the range, factory or parser is null
-	 * @throws IllegalArgumentException If the factory does not create a new reader of the same string
-	 */
-	private <R extends StringReader, T> T readRange(@NonNull Range range, @NonNull Function<String, R> factory, @NonNull Function<? super R, T> parser) {
-		Objects.requireNonNull(range, "Range must not be null");
-		Objects.requireNonNull(factory, "Factory must not be null");
-		Objects.requireNonNull(parser, "Parser must not be null");
+	private <K, V> void putEntry(@NonNull Map<K, V> map, @Nullable K key, @Nullable V value) {
+		Objects.requireNonNull(map, "Map must not be null");
 		
-		this.setIndex(range.start());
-		try (R reader = this.createSubReader(range.end() - range.start(), factory)) {
-			return parser.apply(reader);
+		switch (this.duplicationStrategy) {
+			case IGNORE -> map.put(key, value);
+			case KEEP_FIRST -> {
+				if (!map.containsKey(key)) {
+					map.put(key, value);
+				}
+			}
+			case KEEP_LAST -> {
+				map.remove(key);
+				map.put(key, value);
+			}
+			case THROW -> {
+				if (map.containsKey(key)) {
+					throw new InvalidStringException(this.withLocation("Duplicate key '" + key + "' in map"));
+				}
+				map.put(key, value);
+			}
 		}
 	}
 	
@@ -609,14 +736,54 @@ public class ScopedStringReader extends ValueStringReader {
 		if (!super.equals(o)) return false;
 		ScopedStringReader that = (ScopedStringReader) o;
 		
-		return this.scopes.equals(that.scopes);
+		return this.scopes.equals(that.scopes) && this.duplicationStrategy == that.duplicationStrategy;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), this.scopes);
+		return Objects.hash(super.hashCode(), this.scopes, this.duplicationStrategy);
 	}
 	//endregion
+	
+	//region Internal
+	
+	/**
+	 * The strategy to use when a duplicate element in a set or a duplicate key in a map is read.<br>
+	 * The strategy of a reader is defined on construction, the default strategy is {@link DuplicationStrategy#IGNORE}.<br>
+	 * <p>
+	 *     Elements and keys are compared using {@link Object#equals(Object)} and {@link Object#hashCode()}.<br>
+	 *     The position of an element or entry is its position in the resulting set or map,<br>
+	 *     which is the insertion order of the underlying linked collection.
+	 * </p>
+	 *
+	 * @author Luis-St
+	 */
+	public enum DuplicationStrategy {
+		/**
+		 * Ignores duplicates and uses the default behavior of the collection.<br>
+		 * <ul>
+		 *     <li>Sets: The first element is kept at its position, the duplicate is discarded.</li>
+		 *     <li>Maps: The entry keeps the position of the first key, but its value is replaced by the value of the duplicate.</li>
+		 * </ul>
+		 */
+		IGNORE,
+		/**
+		 * Throws an {@link InvalidStringException} when a duplicate is read.<br>
+		 * The location of the exception points to the start of the duplicate element or entry.<br>
+		 */
+		THROW,
+		/**
+		 * Keeps the last duplicate.<br>
+		 * The previous element or entry is removed and the duplicate is added at the end,<br>
+		 * so the position and the value of the last duplicate are used.<br>
+		 */
+		KEEP_LAST,
+		/**
+		 * Keeps the first duplicate.<br>
+		 * The duplicate is discarded, so the position and the value of the first element or entry are used.<br>
+		 */
+		KEEP_FIRST
+	}
 	
 	/**
 	 * A tracker for quoted parts and scopes of a string.<br>
@@ -676,25 +843,5 @@ public class ScopedStringReader extends ValueStringReader {
 			}
 		}
 	}
-	
-	//region Internal
-	
-	/**
-	 * Internal record to represent a range of the string.<br>
-	 *
-	 * @param start The inclusive start index
-	 * @param end The exclusive end index
-	 */
-	private record Range(int start, int end) {
-		
-		/**
-		 * Returns the part of the given string which is covered by this range.<br>
-		 *
-		 * @param string The string
-		 * @return The covered part of the string
-		 */
-		public @NonNull String of(@NonNull String string) {
-			return string.substring(this.start, this.end);
-		}
-	}
+	//endregion
 }

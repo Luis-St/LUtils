@@ -56,7 +56,7 @@ public class QuotedStringReader extends PositionedStringReader {
 	}
 	
 	/**
-	 * Constructs a new quoted string reader with the given string, escape character and quoting.<br>
+	 * Constructs a new quoted string reader with the given string, escape character, and quoting.<br>
 	 *
 	 * @param string The string to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -206,6 +206,8 @@ public class QuotedStringReader extends PositionedStringReader {
 	}
 	//endregion
 	
+	//region Internal
+	
 	/**
 	 * A tracker for quoted parts of a string.<br>
 	 * A quoted part is opened by the opening character of a quote and closed by the closing character of the same quote.<br>
@@ -266,4 +268,5 @@ public class QuotedStringReader extends PositionedStringReader {
 			}
 		}
 	}
+	//endregion
 }

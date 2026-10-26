@@ -61,7 +61,7 @@ public class ValueStringReader extends QuotedStringReader {
 	}
 	
 	/**
-	 * Constructs a new value string reader with the given string, escape character and quoting.<br>
+	 * Constructs a new value string reader with the given string, escape character, and quoting.<br>
 	 *
 	 * @param string The string to read from
 	 * @param escapeCharacter The escape character, or null to disable escaping
@@ -148,7 +148,7 @@ public class ValueStringReader extends QuotedStringReader {
 	/**
 	 * Reads a number as a string of the given type.<br>
 	 * The initial type is used to determine the type of the number,<br>
-	 * it can be overridden by a larger number type (e.g. reading a byte as a long).<br>
+	 * it can be overridden by a larger number type (e.g., reading a byte as a long).<br>
 	 * <p>
 	 *     The number can be quoted or unquoted.<br>
 	 *     The first character can be a minus or plus sign.<br>
@@ -357,6 +357,46 @@ public class ValueStringReader extends QuotedStringReader {
 	}
 	
 	/**
+	 * Reads a number of the given type.<br>
+	 *
+	 * @param type The type of the number to read
+	 * @param name The name of the value used in error messages
+	 * @return The number value which was read
+	 * @param <T> The type of the number
+	 * @throws NullPointerException If the type or name is null
+	 * @throws ConcurrentInteractionException If a child reader is active
+	 * @throws IllegalStateException If this reader is a closed sub reader
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) number of the given type
+	 * @see #readNumberAsString(NumberType)
+	 */
+	private <T extends Number> @NonNull T readNumberOfType(@NonNull NumberType type, @NonNull String name) {
+		Objects.requireNonNull(type, "Number type must not be null");
+		Objects.requireNonNull(name, "Name must not be null");
+		this.ensureUsable();
+		
+		String description = ("aeiou".indexOf(name.charAt(0)) >= 0 ? "an " : "a ") + name;
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException(this.withLocation("Expected " + description + " but found nothing"));
+		}
+		
+		ParsedNumber number = this.readNumberAsString(type);
+		if (number == null || number.value().isEmpty()) {
+			throw new InvalidStringException(this.withLocation("Expected " + description + " but found nothing"));
+		}
+		
+		if (number.type() != type) {
+			throw new InvalidStringException(this.withLocation("Expected " + description + " but found: '" + number + "'"));
+		}
+		
+		try {
+			return type.parseNumber(number.getSignedValue(), number.radix());
+		} catch (NumberFormatException e) {
+			throw new InvalidStringException(this.withLocation("Unable to parse " + name + ": '" + number + "'"), e);
+		}
+	}
+	
+	/**
 	 * Reads a byte.<br>
 	 * The number can be suffixed with a {@code b} (case-insensitive) to indicate that it is a byte.<br>
 	 *
@@ -475,45 +515,6 @@ public class ValueStringReader extends QuotedStringReader {
 	}
 	
 	/**
-	 * Reads a number of the given type.<br>
-	 *
-	 * @param type The type of the number to read
-	 * @param name The name of the value used in error messages
-	 * @return The number value which was read
-	 * @param <T> The type of the number
-	 * @throws NullPointerException If the type or name is null
-	 * @throws ConcurrentInteractionException If a child reader is active
-	 * @throws IllegalStateException If this reader is a closed sub reader
-	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a (valid) number of the given type
-	 * @see #readNumberAsString(NumberType)
-	 */
-	private <T extends Number> @NonNull T readNumberOfType(@NonNull NumberType type, @NonNull String name) {
-		Objects.requireNonNull(type, "Number type must not be null");
-		Objects.requireNonNull(name, "Name must not be null");
-		this.ensureUsable();
-		String description = ("aeiou".indexOf(name.charAt(0)) >= 0 ? "an " : "a ") + name;
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException(this.withLocation("Expected " + description + " but found nothing"));
-		}
-		
-		ParsedNumber number = this.readNumberAsString(type);
-		if (number == null || number.value().isEmpty()) {
-			throw new InvalidStringException(this.withLocation("Expected " + description + " but found nothing"));
-		}
-		
-		if (number.type() != type) {
-			throw new InvalidStringException(this.withLocation("Expected " + description + " but found: '" + number + "'"));
-		}
-		
-		try {
-			return type.parseNumber(number.getSignedValue(), number.radix());
-		} catch (NumberFormatException e) {
-			throw new InvalidStringException(this.withLocation("Unable to parse " + name + ": '" + number + "'"), e);
-		}
-	}
-	
-	/**
 	 * Reads the next value as the best matching object.<br>
 	 * The type of the value is determined in the following order:<br>
 	 * <ol>
@@ -530,7 +531,7 @@ public class ValueStringReader extends QuotedStringReader {
 	 *     </li>
 	 *     <li>
 	 *         <b>Numbers</b>:<br>
-	 *         If the next character is a digit, a sign or a dot and the value can be read as a number<br>
+	 *         If the next character is a digit, a sign, or a dot and the value can be read as a number<br>
 	 *         which is not followed by another word character, a {@link Number} is returned (see {@link #readNumber()}).<br>
 	 *         Numbers with a type suffix are returned as the specified type.<br>
 	 *         Numbers without a type suffix are returned as {@link Long} or {@link Double}.<br>
@@ -545,7 +546,7 @@ public class ValueStringReader extends QuotedStringReader {
 	 * <p>
 	 *     A word character is a letter, a digit, an underscore, or a dot.<br>
 	 *     If reading a boolean or number fails, the reader index is restored before the next type is tried.<br>
-	 *     The marked index of the reader is not modified by this method.
+	 *     This method does not modify the marked index of the reader.
 	 * </p>
 	 *
 	 * @return The object which was read
@@ -622,7 +623,6 @@ public class ValueStringReader extends QuotedStringReader {
 		return this.readUnquotedString();
 	}
 	
-	
 	//region Internal
 	
 	/**
@@ -642,7 +642,7 @@ public class ValueStringReader extends QuotedStringReader {
 		 * @param value The value of the number
 		 * @param type The type of the number
 		 * @param radix The radix of the number
-		 * @throws NullPointerException If the value, type or radix is null
+		 * @throws NullPointerException If the value, type, or radix is null
 		 */
 		private ParsedNumber {
 			Objects.requireNonNull(value, "Value must not be null");
