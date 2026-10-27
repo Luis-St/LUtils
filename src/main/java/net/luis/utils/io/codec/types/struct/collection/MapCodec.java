@@ -183,7 +183,7 @@ public class MapCodec<K, V>
 			}
 		}
 		
-		Map<K, V> entries = new HashMap<>();
+		Map<K, V> entries = new LinkedHashMap<>();
 		for (Map.Entry<K, V> entry : this.decode(partialEntries)) {
 			entries.put(entry.getKey(), entry.getValue());
 		}
