@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
+import net.luis.utils.io.network.connection.ErrorHandler;
+import net.luis.utils.io.network.connection.Framing;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
 import org.junit.jupiter.api.Test;
@@ -33,74 +35,102 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TcpServerConfigTest {
 	
+	private static final ClientExecutorStrategy STRATEGY = ClientExecutorStrategy.virtualThreads();
+	
 	@Test
-	void defaultConfig() {
-		TcpServerConfig config = TcpServerConfig.DEFAULT;
+	void constructWithAllValues() {
+		ErrorHandler onError = (client, error) -> {};
+		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(2);
+		TcpServerConfig config = new TcpServerConfig(10, 1024, Framing.lines(), Duration.ofSeconds(3), false, false, strategy, onError);
 		
-		assertEquals(50, config.backlog());
-		assertEquals(8192, config.clientBufferSize());
-		assertEquals(Duration.ZERO, config.clientReadTimeout());
-		assertTrue(config.tcpNoDelay());
-		assertTrue(config.keepAlive());
-		assertInstanceOf(VirtualThreadStrategy.class, config.executorStrategy());
-		assertNull(config.onClientConnect());
-		assertNull(config.onClientDisconnect());
-		assertNull(config.onMessage());
+		assertEquals(10, config.backlog());
+		assertEquals(1024, config.maxMessageSize());
+		assertEquals(Framing.lines(), config.framing());
+		assertEquals(Duration.ofSeconds(3), config.clientReadTimeout());
+		assertFalse(config.tcpNoDelay());
+		assertFalse(config.keepAlive());
+		assertSame(strategy, config.executorStrategy());
+		assertSame(onError, config.onError());
+	}
+	
+	@Test
+	void constructWithNullOptionalValues() {
+		TcpServerConfig config = assertDoesNotThrow(() -> new TcpServerConfig(10, 1024, Framing.lines(), null, true, true, STRATEGY, null));
+		
+		assertNull(config.clientReadTimeout());
 		assertNull(config.onError());
 	}
 	
 	@Test
-	void constructWithNullClientReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, null, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	void constructWithNullFraming() {
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(10, 1024, null, null, true, true, STRATEGY, null));
 	}
 	
 	@Test
-	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, Duration.ZERO, true, true, null, null, null, null, null));
+	void constructWithNullExecutorStrategy() {
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(10, 1024, Framing.lines(), null, true, true, null, null));
 	}
 	
 	@Test
-	void constructWithInvalidBacklogThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(0, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(-1, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	void constructWithInvalidClientReadTimeout() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(10, 1024, Framing.lines(), Duration.ZERO, true, true, STRATEGY, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(10, 1024, Framing.lines(), Duration.ofSeconds(-1), true, true, STRATEGY, null));
 	}
 	
 	@Test
-	void constructWithInvalidClientBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, 0, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, -1, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	void constructWithInvalidBacklog() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(0, 1024, Framing.lines(), null, true, true, STRATEGY, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(-1, 1024, Framing.lines(), null, true, true, STRATEGY, null));
 	}
 	
 	@Test
-	void builder() {
-		TcpServerConfig config = TcpServerConfig.builder()
-			.backlog(100)
-			.clientBufferSize(16384)
-			.clientReadTimeout(Duration.ofSeconds(60))
-			.tcpNoDelay(false)
-			.keepAlive(false)
-			.executorStrategy(ClientExecutorStrategy.fixedPool(8))
-			.build();
+	void constructWithInvalidMaxMessageSize() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(10, 0, Framing.lines(), null, true, true, STRATEGY, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(10, -1, Framing.lines(), null, true, true, STRATEGY, null));
+	}
+	
+	@Test
+	void constructWithBoundaryValues() {
+		TcpServerConfig config = assertDoesNotThrow(() -> new TcpServerConfig(1, 1, Framing.lines(), null, true, true, STRATEGY, null));
 		
-		assertEquals(100, config.backlog());
-		assertEquals(16384, config.clientBufferSize());
-		assertEquals(Duration.ofSeconds(60), config.clientReadTimeout());
-		assertFalse(config.tcpNoDelay());
-		assertFalse(config.keepAlive());
+		assertEquals(1, config.backlog());
+		assertEquals(1, config.maxMessageSize());
 	}
 	
 	@Test
-	void builderWithHandlers() {
-		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> {})
-			.onClientDisconnect(event -> {})
-			.onMessage((server, conn, data) -> {})
-			.onError((type, msg, cause) -> {})
-			.build();
+	void defaultValues() {
+		TcpServerConfig config = TcpServerConfig.DEFAULT;
 		
-		assertNotNull(config.onClientConnect());
-		assertNotNull(config.onClientDisconnect());
-		assertNotNull(config.onMessage());
-		assertNotNull(config.onError());
+		assertEquals(50, config.backlog());
+		assertEquals(8192, config.maxMessageSize());
+		assertEquals(Framing.lengthPrefixed(), config.framing());
+		assertNull(config.clientReadTimeout());
+		assertTrue(config.tcpNoDelay());
+		assertTrue(config.keepAlive());
+		assertInstanceOf(VirtualThreadStrategy.class, config.executorStrategy());
+		assertNull(config.onError());
+	}
+	
+	@Test
+	void builderReturnsNewInstanceEachCall() {
+		assertNotSame(TcpServerConfig.builder(), TcpServerConfig.builder());
+	}
+	
+	@Test
+	void builderWithoutChangesBuildsDefault() {
+		assertEquals(TcpServerConfig.DEFAULT, TcpServerConfig.builder().build());
+	}
+	
+	@Test
+	void equalityAndHashCode() {
+		ErrorHandler onError = (client, error) -> {};
+		ErrorHandler otherOnError = (client, error) -> {};
+		TcpServerConfig first = new TcpServerConfig(10, 1024, Framing.lines(), null, true, true, STRATEGY, onError);
+		TcpServerConfig second = new TcpServerConfig(10, 1024, Framing.lines(), null, true, true, STRATEGY, onError);
+		TcpServerConfig other = new TcpServerConfig(10, 1024, Framing.lines(), null, true, true, STRATEGY, otherOnError);
+		
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+		assertNotEquals(first, other);
 	}
 }

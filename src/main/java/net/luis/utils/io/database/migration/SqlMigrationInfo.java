@@ -35,13 +35,15 @@ import java.util.Objects;
  * @param status The current status of the migration
  * @param appliedAt The instant at which the migration was applied or {@code null} if it has not been applied
  * @param checksum The checksum of the migration or {@code null} if no checksum is recorded
+ * @param statements The sql statements that were executed when the migration was applied, separated by {@code ";\n"}, or {@code null} if none are recorded
  */
 public record SqlMigrationInfo(
 	@NonNull Version version,
 	@NonNull String description,
 	@NonNull SqlMigrationStatus status,
 	@Nullable Instant appliedAt,
-	@Nullable String checksum
+	@Nullable String checksum,
+	@Nullable String statements
 ) {
 	
 	/**
@@ -52,5 +54,19 @@ public record SqlMigrationInfo(
 		Objects.requireNonNull(version, "Sql migration version must not be null");
 		Objects.requireNonNull(description, "Sql migration description must not be null");
 		Objects.requireNonNull(status, "Sql migration status must not be null");
+	}
+	
+	/**
+	 * Constructs a new migration info without any recorded sql statements.<br>
+	 *
+	 * @param version The version that uniquely identifies the migration
+	 * @param description The human-readable description of the migration
+	 * @param status The current status of the migration
+	 * @param appliedAt The instant at which the migration was applied or {@code null} if it has not been applied
+	 * @param checksum The checksum of the migration or {@code null} if no checksum is recorded
+	 * @throws NullPointerException If the version, description or status is null
+	 */
+	public SqlMigrationInfo(@NonNull Version version, @NonNull String description, @NonNull SqlMigrationStatus status, @Nullable Instant appliedAt, @Nullable String checksum) {
+		this(version, description, status, appliedAt, checksum, null);
 	}
 }

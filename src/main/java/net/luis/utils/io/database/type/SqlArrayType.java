@@ -107,6 +107,26 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 	}
 	
 	/**
+	 * Returns the native type name of the given element type without its type parameters.<br>
+	 * The element type of an array is always the bare type, a length or precision belongs to the column definition and not to the array type,<br>
+	 * drivers cannot resolve an array type for a parameterized name such as {@code VARCHAR(16)}.<br>
+	 *
+	 * @param dialect The sql dialect used to resolve the native type name
+	 * @param type The element type to resolve the native type name for
+	 * @return The native type name of the given type without any type parameters
+	 * @throws NullPointerException If the dialect or type is null
+	 * @throws SqlException If the type is not supported by the given dialect
+	 */
+	private static @NonNull String unparameterizedTypeName(@NonNull SqlDialect dialect, @NonNull SqlType<?> type) throws SqlException {
+		Objects.requireNonNull(dialect, "Sql dialect must not be null");
+		Objects.requireNonNull(type, "Sql type must not be null");
+		
+		String typeName = dialect.getTypeName(type);
+		int parameterStart = typeName.indexOf('(');
+		return parameterStart < 0 ? typeName : typeName.substring(0, parameterStart).strip();
+	}
+	
+	/**
 	 * Returns the sql type of the array elements.<br>
 	 * @return The element sql type
 	 */
@@ -188,7 +208,7 @@ public final class SqlArrayType<E> implements SqlType<E[]> {
 				elements[i] = toSourceValue(this.elementType, value[i]);
 			}
 			
-			java.sql.Array array = preparedStatement.getConnection().createArrayOf(dialect.getTypeName(baseType), elements);
+			java.sql.Array array = preparedStatement.getConnection().createArrayOf(unparameterizedTypeName(dialect, baseType), elements);
 			preparedStatement.setArray(columnIndex, array);
 		} catch (SQLException e) {
 			throw new SqlStatementBindException("Failed to bind array value to prepared statement at column index " + columnIndex, e, columnIndex);

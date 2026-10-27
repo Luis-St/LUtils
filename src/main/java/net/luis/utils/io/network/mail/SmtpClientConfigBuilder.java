@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.network.mail;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -71,13 +70,9 @@ public final class SmtpClientConfigBuilder {
 	 */
 	private Charset defaultCharset = StandardCharsets.UTF_8;
 	/**
-	 * The size of the read/write buffers in bytes.<br>
+	 * The maximum length of a reply or command line in bytes.<br>
 	 */
 	private int bufferSize = 8192;
-	/**
-	 * The handler called when an error occurs, or null.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -145,9 +140,10 @@ public final class SmtpClientConfigBuilder {
 	}
 	
 	/**
-	 * Sets the size of the read/write buffers in bytes.<br>
+	 * Sets the maximum length of a reply or command line in bytes.<br>
+	 * This size does not limit the message body.<br>
 	 *
-	 * @param bufferSize The buffer size (must be at least 1)
+	 * @param bufferSize The maximum line length (must be at least 1)
 	 * @return This builder for method chaining
 	 */
 	public @NonNull SmtpClientConfigBuilder bufferSize(int bufferSize) {
@@ -156,21 +152,10 @@ public final class SmtpClientConfigBuilder {
 	}
 	
 	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull SmtpClientConfigBuilder onError(@Nullable ErrorEventHandler onError) {
-		this.onError = onError;
-		return this;
-	}
-	
-	/**
 	 * Builds a new SMTP client configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
 	public @NonNull SmtpClientConfig build() {
-		return new SmtpClientConfig(this.security, this.auth, this.ehloHostname, this.tlsConfig, this.defaultCharset, this.bufferSize, this.onError);
+		return new SmtpClientConfig(this.security, this.auth, this.ehloHostname, this.tlsConfig, this.defaultCharset, this.bufferSize);
 	}
 }

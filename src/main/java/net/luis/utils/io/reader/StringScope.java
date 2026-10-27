@@ -18,11 +18,6 @@
 
 package net.luis.utils.io.reader;
 
-import com.google.common.collect.Maps;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A record to define a string scope with an opening and a closing character.<br>
  *
@@ -33,16 +28,6 @@ import java.util.Map;
  */
 public record StringScope(char open, char close) {
 	
-	/**
-	 * A map that stores all created scopes.<br>
-	 * The key is the opening character and the value is the closing character.<br>
-	 * <p>
-	 *     This registry is internal and package-private on purpose.<br>
-	 *     It is mutated by every constructed scope and read by {@link ScopedStringReader} while parsing,<br>
-	 *     so it must not be exposed for external mutation.
-	 * </p>
-	 */
-	static final Map<Character, Character> SCOPE_REGISTRY = Maps.newHashMap();
 	/**
 	 * Constant string scope for parentheses.<br>
 	 */
@@ -65,7 +50,7 @@ public record StringScope(char open, char close) {
 	 *
 	 * @param open The opening character
 	 * @param close The closing character
-	 * @throws IllegalArgumentException If the opening and closing character are the same
+	 * @throws IllegalArgumentException If the opening and closing character are the same or the null character
 	 */
 	public StringScope {
 		if (open == close) {
@@ -74,6 +59,5 @@ public record StringScope(char open, char close) {
 		if (open == '\0' || close == '\0') {
 			throw new IllegalArgumentException("Opening and closing character must not be the null character");
 		}
-		SCOPE_REGISTRY.put(open, close);
 	}
 }

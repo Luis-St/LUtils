@@ -18,11 +18,12 @@
 
 package net.luis.utils.io.database.query.crud;
 
-import net.luis.utils.io.database.dialect.SqlDialect;
-import net.luis.utils.io.database.dialect.SqlDialects;
+import net.luis.utils.io.database.Sql;
+import net.luis.utils.io.database.dialect.*;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.rendering.SqlRendered;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.database.SqlTestFixtures.*;
@@ -165,7 +166,7 @@ class SqlDeleteQueryTest {
 	void toSqlWithJoins() throws SqlException {
 		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition());
 		String sql = query.toSql(JOINED_DML_DIALECT).sql();
-		assertTrue(sql.contains("DELETE FROM"));
+		assertTrue(sql.contains("DELETE `test_table` FROM `test_table`"));
 		assertTrue(sql.contains("INNER JOIN"));
 	}
 	
@@ -187,5 +188,73 @@ class SqlDeleteQueryTest {
 		SqlDeleteQuery<Object> all = original.allowAll();
 		assertNotSame(original, all);
 		assertTrue(all.toSql(DIALECT).sql().contains("DELETE FROM"));
+	}
+	
+	@Test
+	void toSqlWithJoinsOnDialectRequiringDeleteTarget() throws SqlException {
+		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition());
+		String sql = query.toSql(JOINED_DML_DIALECT).sql();
+		assertTrue(sql.startsWith("DELETE `test_table` FROM `test_table`"), sql);
+		assertTrue(sql.contains("INNER JOIN"), sql);
+	}
+	
+	@Test
+	void toSqlWithJoinsOnDialectWithoutDeleteTarget() throws SqlException {
+		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition());
+		String sql = query.toSql(new StandardJoinedDeleteDialect()).sql();
+		assertTrue(sql.startsWith("DELETE FROM `test_table`"), sql);
+		assertTrue(sql.contains("INNER JOIN"), sql);
+	}
+	
+	@Test
+	void toSqlWithoutJoinsOnDialectRequiringDeleteTarget() throws SqlException {
+		String sql = delete().allowAll().toSql(JOINED_DML_DIALECT).sql();
+		assertEquals("DELETE FROM `test_table`", sql);
+	}
+	
+	@Test
+	void toSqlWithoutJoinsOnDialectWithoutDeleteTarget() throws SqlException {
+		String sql = delete().allowAll().toSql(SqlDialects.POSTGRESQL).sql();
+		assertEquals("DELETE FROM \"test_table\"", sql);
+	}
+	
+	@Test
+	void toSqlWithJoinsAndWhereOnDialectRequiringDeleteTarget() throws SqlException {
+		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition()).where(Sql.equalTo(stringColumn(), "value"));
+		SqlRendered rendered = query.toSql(JOINED_DML_DIALECT);
+		assertTrue(rendered.sql().startsWith("DELETE `test_table` FROM `test_table`"), rendered.sql());
+		assertTrue(rendered.sql().contains("WHERE"), rendered.sql());
+		assertEquals(1, rendered.parameters().size());
+		assertEquals("value", rendered.parameters().getFirst().getSecond());
+	}
+	
+	@Test
+	void toSqlWithJoinTargetQuotesIdentifier() throws SqlException {
+		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition());
+		String quoted = JOINED_DML_DIALECT.quoteIdentifier(sampleTable().name());
+		assertTrue(query.toSql(JOINED_DML_DIALECT).sql().startsWith("DELETE " + quoted + " FROM " + quoted), query.toSql(JOINED_DML_DIALECT).sql());
+	}
+	
+	@Test
+	void toSqlWithMultipleJoinsOnDialectRequiringDeleteTarget() throws SqlException {
+		SqlDeleteQuery<Object> query = delete().innerJoin(sampleTable(), alwaysCondition()).leftJoin(sampleTable(), alwaysCondition()).crossJoin(sampleTable());
+		String sql = query.toSql(JOINED_DML_DIALECT).sql();
+		
+		assertEquals(1, sql.split("DELETE `test_table` FROM", -1).length - 1, sql);
+		assertTrue(sql.indexOf("INNER JOIN") < sql.indexOf("LEFT JOIN"), sql);
+		assertTrue(sql.indexOf("LEFT JOIN") < sql.indexOf("CROSS JOIN"), sql);
+		assertTrue(sql.indexOf("FROM") < sql.indexOf("INNER JOIN"), sql);
+	}
+	
+	/**
+	 * A MySQL dialect that keeps {@code JOINED_DML} support but renders the standard {@code DELETE FROM} form, which
+	 * isolates the {@code requiresJoinedDeleteTarget()} operand — no shipped dialect combines the two.
+	 */
+	private static final class StandardJoinedDeleteDialect extends MySqlDialect {
+		
+		@Override
+		public boolean requiresJoinedDeleteTarget() {
+			return false;
+		}
 	}
 }

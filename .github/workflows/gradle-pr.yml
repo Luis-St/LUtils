@@ -59,6 +59,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.4.3
       - name: 'Verify Docker is available for Testcontainers'
         run: docker info
+      - name: 'Allow unprivileged ICMP sockets'
+        run: sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"
       - name: 'Test with Gradle'
         run: ./gradlew test
       - name: 'Upload test results'

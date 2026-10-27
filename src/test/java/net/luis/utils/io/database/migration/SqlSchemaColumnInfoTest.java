@@ -71,4 +71,88 @@ class SqlSchemaColumnInfoTest {
 		assertFalse(info.primaryKey());
 		assertTrue(info.unique());
 	}
+	
+	@Test
+	void constructWithTypeIdentifier() {
+		SqlSchemaColumnInfo info = new SqlSchemaColumnInfo("table", "column", Types.CHAR, SqlParameter.length(36), false, false, true, false, 0, "uuid");
+		assertEquals("uuid", info.typeIdentifier());
+		assertEquals("table", info.tableName());
+		assertEquals("column", info.columnName());
+		assertEquals(Types.CHAR, info.jdbcType());
+		assertEquals(0, info.ordinalPosition());
+	}
+	
+	@Test
+	void constructWithNullTypeIdentifier() {
+		SqlSchemaColumnInfo info = assertDoesNotThrow(() -> new SqlSchemaColumnInfo("table", "column", Types.INTEGER, null, true, false, false, false, 1, null));
+		assertNull(info.typeIdentifier());
+	}
+	
+	@Test
+	void constructWithoutTypeIdentifier() {
+		SqlSchemaColumnInfo info = new SqlSchemaColumnInfo("table", "column", Types.INTEGER, null, true, false, false, false, 2);
+		assertNull(info.typeIdentifier());
+		assertEquals("table", info.tableName());
+		assertEquals(2, info.ordinalPosition());
+	}
+	
+	@Test
+	void constructWithNullTableNameAndTypeIdentifier() {
+		assertThrows(NullPointerException.class, () -> new SqlSchemaColumnInfo(null, "column", Types.INTEGER, null, true, false, false, false, 0, "uuid"));
+	}
+	
+	@Test
+	void constructWithNullColumnNameAndTypeIdentifier() {
+		assertThrows(NullPointerException.class, () -> new SqlSchemaColumnInfo("table", null, Types.INTEGER, null, true, false, false, false, 0, "uuid"));
+	}
+	
+	@Test
+	void constructWithNullTableNameInShortConstructor() {
+		assertThrows(NullPointerException.class, () -> new SqlSchemaColumnInfo(null, "column", Types.INTEGER, null, true, false, false, false, 0));
+	}
+	
+	@Test
+	void constructWithNullColumnNameInShortConstructor() {
+		assertThrows(NullPointerException.class, () -> new SqlSchemaColumnInfo("table", null, Types.INTEGER, null, true, false, false, false, 0));
+	}
+	
+	@Test
+	void typeIdentifierIndependentOfParameter() {
+		SqlSchemaColumnInfo identified = new SqlSchemaColumnInfo("table", "column", Types.CHAR, SqlParameter.length(36), true, false, false, false, 0, "uuid");
+		SqlSchemaColumnInfo plain = new SqlSchemaColumnInfo("table", "column", Types.CHAR, SqlParameter.length(36), true, false, false, false, 0, null);
+		assertEquals(SqlParameter.length(36), identified.parameter());
+		assertEquals(identified.parameter(), plain.parameter());
+		assertEquals("uuid", identified.typeIdentifier());
+		assertNull(plain.typeIdentifier());
+	}
+	
+	@Test
+	void constructWithBlankTypeIdentifier() {
+		SqlSchemaColumnInfo info = assertDoesNotThrow(() -> new SqlSchemaColumnInfo("table", "column", Types.CHAR, null, true, false, false, false, 0, ""));
+		assertEquals("", info.typeIdentifier());
+	}
+	
+	@Test
+	void equalsDistinguishesTypeIdentifier() {
+		SqlSchemaColumnInfo identified = new SqlSchemaColumnInfo("table", "column", Types.CHAR, null, true, false, false, false, 0, "uuid");
+		SqlSchemaColumnInfo plain = new SqlSchemaColumnInfo("table", "column", Types.CHAR, null, true, false, false, false, 0, null);
+		SqlSchemaColumnInfo other = new SqlSchemaColumnInfo("table", "column", Types.CHAR, null, true, false, false, false, 0, "uuid");
+		assertNotEquals(identified, plain);
+		assertEquals(identified, other);
+		assertEquals(identified.hashCode(), other.hashCode());
+	}
+	
+	@Test
+	void equalsBetweenShortAndCanonicalConstructor() {
+		SqlSchemaColumnInfo shortForm = new SqlSchemaColumnInfo("table", "column", Types.INTEGER, null, true, false, false, false, 0);
+		SqlSchemaColumnInfo canonical = new SqlSchemaColumnInfo("table", "column", Types.INTEGER, null, true, false, false, false, 0, null);
+		assertEquals(shortForm, canonical);
+		assertEquals(shortForm.hashCode(), canonical.hashCode());
+	}
+	
+	@Test
+	void toStringContainsTypeIdentifier() {
+		String string = new SqlSchemaColumnInfo("table", "column", Types.CHAR, null, true, false, false, false, 0, "uuid").toString();
+		assertTrue(string.contains("typeIdentifier=uuid"));
+	}
 }

@@ -170,7 +170,7 @@ class EnumLikeTest {
 	//endregion
 	
 	//region Internal
-	private static record Example(String name) implements EnumLike<Example> {
+	private record Example(String name) implements EnumLike<Example> {
 		
 		@ReflectiveUsage
 		private static final List<Example> VALUES = Lists.newLinkedList();
@@ -190,7 +190,7 @@ class EnumLikeTest {
 		}
 	}
 	
-	private static record EmptyExample(String name) implements EnumLike<EmptyExample> {
+	private record EmptyExample(String name) implements EnumLike<EmptyExample> {
 		
 		@ReflectiveUsage
 		private static final List<EmptyExample> VALUES = Lists.newLinkedList();

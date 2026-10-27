@@ -21,11 +21,15 @@ package net.luis.utils.io.database.dialect;
 import net.luis.utils.io.database.SqlTestFixtures;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.dialect.SqlDialectFeatureException;
+import net.luis.utils.io.database.expression.SqlExpression;
 import net.luis.utils.io.database.expression.SqlValueExpression;
 import net.luis.utils.io.database.function.functions.numeric.SqlRandomFunction;
 import net.luis.utils.io.database.function.functions.string.SqlConcatFunction;
 import net.luis.utils.io.database.index.SqlIndexMethod;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.table.SqlColumn;
+import net.luis.utils.io.database.type.SqlTypeRegistry;
 import net.luis.utils.io.database.type.SqlTypes;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class MySqlDialectTest {
 	
 	private static final MySqlDialect DIALECT = new MySqlDialect();
+	
+	@SuppressWarnings("unchecked")
+	private static <V> SqlExpression<V> castExpression(SqlExpression<?> expression) {
+		return (SqlExpression<V>) expression;
+	}
 	
 	@Test
 	void isFeatureSupportedNullFeature() {
@@ -77,7 +86,12 @@ class MySqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseNullUpdateColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), null));
+	}
+	
+	@Test
+	void upsertExcludedValueNullColumn() {
+		assertThrows(NullPointerException.class, () -> DIALECT.upsertExcludedValue(null));
 	}
 	
 	@Test
@@ -209,26 +223,57 @@ class MySqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseSingleColumn() throws SqlException {
-		String sql = DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of(SqlTestFixtures.stringColumn())).sql();
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, castExpression(DIALECT.upsertExcludedValue(stringColumn)), SqlSetType.EXPRESSION);
+		List<SqlSetClause<?, ?>> updateClauses = List.of(updateClause);
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn());
+		String sql = DIALECT.renderUpsertClause(conflictColumns, updateClauses).sql();
 		assertTrue(sql.contains("ON DUPLICATE KEY UPDATE"));
 		assertTrue(sql.contains("VALUES(`name`)"));
-		assertFalse(sql.contains(","));
 	}
 	
 	@Test
 	void renderUpsertClauseMultipleColumns() throws SqlException {
-		List<SqlColumn<?, ?>> updates = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
-		String sql = DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), updates).sql();
-		assertTrue(sql.contains(","));
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		List<SqlSetClause<?, ?>> updates = List.of(
+			new SqlSetClause<>(integerColumn, castExpression(DIALECT.upsertExcludedValue(integerColumn)), SqlSetType.EXPRESSION),
+			new SqlSetClause<>(stringColumn, castExpression(DIALECT.upsertExcludedValue(stringColumn)), SqlSetType.EXPRESSION)
+		);
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn());
+		String sql = DIALECT.renderUpsertClause(conflictColumns, updates).sql();
 		assertTrue(sql.contains("VALUES(`id`)"));
 		assertTrue(sql.contains("VALUES(`name`)"));
 	}
 	
 	@Test
 	void renderUpsertClauseEmptyColumns() throws SqlException {
-		String sql = DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()).sql();
+		String sql = DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()).sql();
 		assertTrue(sql.contains("ON DUPLICATE KEY UPDATE"));
 		assertFalse(sql.contains("VALUES("));
+	}
+	
+	@Test
+	void renderUpsertClauseWithCustomSetClauseExpression() throws SqlException {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, SqlTestFixtures.stringExpression(), SqlSetType.EXPRESSION);
+		String sql = DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)).sql();
+		assertTrue(sql.contains("ON DUPLICATE KEY UPDATE"));
+		assertTrue(sql.contains("`name`"));
+		assertFalse(sql.contains("VALUES("));
+	}
+	
+	@Test
+	void upsertExcludedValueRendersValuesExpression() throws SqlException {
+		SqlColumn<Object, Integer> column = SqlTestFixtures.integerColumn();
+		SqlExpression<?> expression = DIALECT.upsertExcludedValue(column);
+		assertEquals("VALUES(`id`)", expression.toSql(DIALECT).sql());
+	}
+	
+	@Test
+	void upsertExcludedValueToSqlNullDialect() throws SqlException {
+		SqlExpression<?> expression = DIALECT.upsertExcludedValue(SqlTestFixtures.integerColumn());
+		assertThrows(NullPointerException.class, () -> expression.toSql(null));
 	}
 	
 	@Test
@@ -285,5 +330,65 @@ class MySqlDialectTest {
 	@Test
 	void randomFunctionRoutesThroughMySqlRenderer() throws SqlException {
 		assertEquals("RAND()", DIALECT.renderFunction(new SqlRandomFunction()).sql());
+	}
+	
+	@Test
+	void constructWithAdditionalTypes() throws SqlException {
+		MySqlDialect dialect = new MySqlDialect(SqlTypeRegistry.builder().register(SqlTypes.IP_ADDRESS, "INET6").build());
+		assertEquals("MySQL", dialect.name());
+		assertEquals("INET6", dialect.getTypeName(SqlTypes.IP_ADDRESS));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		MySqlDialect dialect = new MySqlDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "MY_JSON").build());
+		assertEquals("JSON", DIALECT.getTypeName(SqlTypes.JSON));
+		assertEquals("MY_JSON", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new MySqlDialect(null));
+	}
+	
+	@Test
+	void introspectionCatalogWithNullSchema() {
+		assertThrows(NullPointerException.class, () -> DIALECT.introspectionCatalog(null));
+	}
+	
+	@Test
+	void introspectionSchemaWithNullSchema() {
+		assertThrows(NullPointerException.class, () -> DIALECT.introspectionSchema(null));
+	}
+	
+	@Test
+	void supportsOffsetTemporalTypesReturnsFalse() {
+		assertFalse(DIALECT.supportsOffsetTemporalTypes());
+	}
+	
+	@Test
+	void requiresJoinedDeleteTargetReturnsTrue() {
+		assertTrue(DIALECT.requiresJoinedDeleteTarget());
+	}
+	
+	@Test
+	void introspectionCatalogReturnsSchema() {
+		assertEquals("app", DIALECT.introspectionCatalog("app"));
+	}
+	
+	@Test
+	void introspectionSchemaReturnsNull() {
+		assertNull(DIALECT.introspectionSchema("app"));
+	}
+	
+	@Test
+	void introspectionCatalogAndSchemaAreComplementary() {
+		assertNotNull(DIALECT.introspectionCatalog("app"));
+		assertNull(DIALECT.introspectionSchema("app"));
+	}
+	
+	@Test
+	void introspectionCatalogWithEmptySchema() {
+		assertEquals("", DIALECT.introspectionCatalog(""));
 	}
 }

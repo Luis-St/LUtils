@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
+import net.luis.utils.io.network.connection.Framing;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -27,10 +26,10 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Builder class for constructing TCP client configuration.<br>
+ * Builder class for constructing a TCP client configuration.<br>
  * Provides a fluent API for setting individual configuration options.<br>
  * <p>
- *     All options default to values matching {@link TcpClientConfig#DEFAULT}.
+ *     All options default to the values of {@link TcpClientConfig#DEFAULT}.
  * </p>
  * <p>
  *     Example usage:
@@ -38,10 +37,7 @@ import java.util.Objects;
  * <pre>{@code
  * TcpClientConfig config = TcpClientConfig.builder()
  *     .connectTimeout(Duration.ofSeconds(10))
- *     .readTimeout(Duration.ofSeconds(30))
- *     .tcpNoDelay(true)
- *     .onConnect(event -> System.out.println("Connected to " + event.remoteEndpoint()))
- *     .onDisconnect(event -> System.out.println("Disconnected"))
+ *     .maxMessageSize(65536)
  *     .build();
  * }</pre>
  *
@@ -52,41 +48,29 @@ import java.util.Objects;
 public final class TcpClientConfigBuilder {
 	
 	/**
-	 * The maximum time to wait for connection establishment.<br>
+	 * The maximum time to wait for the connection to be established.<br>
 	 */
-	private Duration connectTimeout = Duration.ofSeconds(30);
+	private Duration connectTimeout = TcpClientConfig.DEFAULT.connectTimeout();
 	/**
-	 * The maximum time to wait for read operations.<br>
+	 * The maximum time a receive waits for data, or null to wait forever.<br>
 	 */
-	private Duration readTimeout = Duration.ZERO;
+	private @Nullable Duration readTimeout = TcpClientConfig.DEFAULT.readTimeout();
 	/**
-	 * The maximum time to wait for write operations.<br>
+	 * The maximum length of a message in bytes.<br>
 	 */
-	private Duration writeTimeout = Duration.ZERO;
+	private int maxMessageSize = TcpClientConfig.DEFAULT.maxMessageSize();
 	/**
-	 * The size of the read/write buffers in bytes.<br>
+	 * The framing that delimits messages on the stream.<br>
 	 */
-	private int bufferSize = 8192;
+	private Framing framing = TcpClientConfig.DEFAULT.framing();
 	/**
-	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
+	 * Whether to disable Nagle's algorithm.<br>
 	 */
-	private boolean tcpNoDelay = true;
+	private boolean tcpNoDelay = TcpClientConfig.DEFAULT.tcpNoDelay();
 	/**
-	 * Whether to enable TCP keep-alive (SO_KEEPALIVE).<br>
+	 * Whether to enable TCP keep-alive.<br>
 	 */
-	private boolean keepAlive = true;
-	/**
-	 * The handler called when connection is established.<br>
-	 */
-	private @Nullable ConnectionEventHandler onConnect;
-	/**
-	 * The handler called when connection is closed.<br>
-	 */
-	private @Nullable ConnectionEventHandler onDisconnect;
-	/**
-	 * The handler called when an error occurs.<br>
-	 */
-	private @Nullable ErrorEventHandler onError;
+	private boolean keepAlive = TcpClientConfig.DEFAULT.keepAlive();
 	
 	/**
 	 * Constructs a new builder with default values.<br>
@@ -94,9 +78,9 @@ public final class TcpClientConfigBuilder {
 	TcpClientConfigBuilder() {}
 	
 	/**
-	 * Sets the maximum time to wait for connection establishment.<br>
+	 * Sets the maximum time to wait for the connection to be established.<br>
 	 *
-	 * @param connectTimeout The connect timeout
+	 * @param connectTimeout The connect timeout, which must be positive
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the connect timeout is null
 	 */
@@ -106,10 +90,9 @@ public final class TcpClientConfigBuilder {
 	}
 	
 	/**
-	 * Sets the maximum time to wait for read operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.<br>
+	 * Sets the maximum time a receive waits for data.<br>
 	 *
-	 * @param readTimeout The read timeout
+	 * @param readTimeout The read timeout, which must be positive
 	 * @return This builder for method chaining
 	 * @throws NullPointerException If the read timeout is null
 	 */
@@ -119,26 +102,35 @@ public final class TcpClientConfigBuilder {
 	}
 	
 	/**
-	 * Sets the maximum time to wait for write operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.<br>
-	 *
-	 * @param writeTimeout The write timeout
+	 * Removes the read timeout, so that a receive waits forever.<br>
 	 * @return This builder for method chaining
-	 * @throws NullPointerException If the write timeout is null
 	 */
-	public @NonNull TcpClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
-		this.writeTimeout = Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
+	public @NonNull TcpClientConfigBuilder noReadTimeout() {
+		this.readTimeout = null;
 		return this;
 	}
 	
 	/**
-	 * Sets the size of the read/write buffers in bytes.<br>
+	 * Sets the maximum length of a message in bytes.<br>
 	 *
-	 * @param bufferSize The buffer size (must be at least 1)
+	 * @param maxMessageSize The max message size, which must be at least 1
 	 * @return This builder for method chaining
 	 */
-	public @NonNull TcpClientConfigBuilder bufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
+	public @NonNull TcpClientConfigBuilder maxMessageSize(int maxMessageSize) {
+		this.maxMessageSize = maxMessageSize;
+		return this;
+	}
+	
+	/**
+	 * Sets the framing that delimits messages on the stream.<br>
+	 * Both peers have to use the same framing.<br>
+	 *
+	 * @param framing The framing
+	 * @return This builder for method chaining
+	 * @throws NullPointerException If the framing is null
+	 */
+	public @NonNull TcpClientConfigBuilder framing(@NonNull Framing framing) {
+		this.framing = Objects.requireNonNull(framing, "Framing must not be null");
 		return this;
 	}
 	
@@ -166,43 +158,12 @@ public final class TcpClientConfigBuilder {
 	}
 	
 	/**
-	 * Sets the handler called when connection is established.<br>
-	 *
-	 * @param onConnect The connection handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpClientConfigBuilder onConnect(@Nullable ConnectionEventHandler onConnect) {
-		this.onConnect = onConnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the handler called when connection is closed.<br>
-	 *
-	 * @param onDisconnect The disconnection handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpClientConfigBuilder onDisconnect(@Nullable ConnectionEventHandler onDisconnect) {
-		this.onDisconnect = onDisconnect;
-		return this;
-	}
-	
-	/**
-	 * Sets the error event handler.<br>
-	 *
-	 * @param onError The error handler, or null to disable
-	 * @return This builder for method chaining
-	 */
-	public @NonNull TcpClientConfigBuilder onError(@Nullable ErrorEventHandler onError) {
-		this.onError = onError;
-		return this;
-	}
-	
-	/**
 	 * Builds a new TCP client configuration with the configured values.<br>
+	 *
 	 * @return A new configuration instance
+	 * @throws IllegalArgumentException If a timeout is not positive or the max message size is less than 1
 	 */
 	public @NonNull TcpClientConfig build() {
-		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.onConnect, this.onDisconnect, this.onError);
+		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.maxMessageSize, this.framing, this.tcpNoDelay, this.keepAlive);
 	}
 }

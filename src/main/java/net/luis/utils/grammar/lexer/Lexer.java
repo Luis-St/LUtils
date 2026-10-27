@@ -20,11 +20,11 @@ package net.luis.utils.grammar.lexer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import net.luis.utils.grammar.token.TokenPosition;
 import net.luis.utils.grammar.lexer.rule.CharRule;
 import net.luis.utils.grammar.lexer.stream.CharStream;
 import net.luis.utils.grammar.parser.Parser;
 import net.luis.utils.grammar.token.Token;
+import net.luis.utils.grammar.token.TokenPosition;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 

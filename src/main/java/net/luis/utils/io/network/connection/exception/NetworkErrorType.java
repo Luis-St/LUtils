@@ -29,104 +29,97 @@ public enum NetworkErrorType {
 	 * Connection attempt failed for an unspecified reason.<br>
 	 */
 	CONNECTION_FAILED,
-	
 	/**
 	 * Connection was refused by the remote host.<br>
 	 * This typically occurs when no server is listening on the target port.<br>
 	 */
 	CONNECTION_REFUSED,
-	
 	/**
 	 * Connection attempt timed out.<br>
 	 * The remote host did not respond within the configured timeout period.<br>
 	 */
 	CONNECTION_TIMEOUT,
-	
 	/**
 	 * Read operation timed out.<br>
 	 * No data was received within the configured read timeout period.<br>
 	 */
 	READ_TIMEOUT,
-	
 	/**
 	 * Write operation timed out.<br>
 	 * Data could not be sent within the configured write timeout period.<br>
 	 */
 	WRITE_TIMEOUT,
-	
 	/**
 	 * Connection was reset by the remote host.<br>
 	 * The connection was forcibly closed by the remote peer.<br>
 	 */
 	CONNECTION_RESET,
-	
 	/**
 	 * The target network is unreachable.<br>
 	 * There is no route to the destination network.<br>
 	 */
 	NETWORK_UNREACHABLE,
-	
 	/**
 	 * The target host is unreachable.<br>
 	 * The host exists but cannot be reached.<br>
 	 */
 	HOST_UNREACHABLE,
-	
 	/**
 	 * The address is already in use.<br>
 	 * Another socket is already bound to the requested address and port.<br>
 	 */
 	ADDRESS_IN_USE,
-	
+	/**
+	 * The requested local address is not available.<br>
+	 * The address to bind to does not belong to any local network interface.<br>
+	 */
+	ADDRESS_NOT_AVAILABLE,
+	/**
+	 * The operation is not permitted.<br>
+	 * The process lacks the required rights, for example to bind to a privileged port or to send a broadcast datagram on a socket that does not allow broadcasts.<br>
+	 */
+	PERMISSION_DENIED,
 	/**
 	 * The socket has been closed.<br>
 	 * An operation was attempted on a closed socket.<br>
 	 */
 	SOCKET_CLOSED,
-	
 	/**
 	 * The client is not connected.<br>
 	 * An operation requiring a connection was attempted before connecting.<br>
 	 */
 	NOT_CONNECTED,
-	
 	/**
 	 * The client is already connected.<br>
 	 * A connection was attempted on an already connected socket.<br>
 	 */
 	ALREADY_CONNECTED,
-	
 	/**
 	 * The TLS/SSL handshake failed.<br>
 	 * The secure connection could not be established, for example due to certificate
 	 * validation failure, an untrusted peer, or no common protocol or cipher suite.<br>
 	 */
 	HANDSHAKE_FAILED,
-	
 	/**
 	 * A general I/O error occurred.<br>
 	 * An unspecified I/O error occurred during the operation.<br>
 	 */
 	IO_ERROR,
-	
 	/**
 	 * The message exceeds the configured buffer size.<br>
 	 * The data to send is larger than the configured buffer size allows.<br>
 	 */
 	MESSAGE_TOO_LARGE,
-	
 	/**
 	 * Authentication with the remote server failed.<br>
 	 * The provided credentials were rejected, for example during an SMTP {@code AUTH} exchange.<br>
 	 */
 	AUTHENTICATION_FAILED,
-	
 	/**
 	 * The remote server violated the expected application protocol.<br>
 	 * An unexpected or malformed reply was received, for example an unexpected SMTP reply code.<br>
 	 */
 	PROTOCOL_ERROR,
-	
 	/**
 	 * An unknown or unclassified error occurred.<br>
 	 * This is used when the error does not fit any other category.<br>

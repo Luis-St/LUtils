@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.network.mail;
 
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
 import net.luis.utils.io.network.connection.ssl.SslClientConfig;
 import org.junit.jupiter.api.Test;
 
@@ -33,8 +32,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SmtpClientConfigBuilderTest {
 	
-	private static final ErrorEventHandler NO_OP = (errorType, message, cause) -> {};
-	
 	@Test
 	void constructDefaultBuilder() {
 		SmtpClientConfig config = SmtpClientConfig.builder().build();
@@ -45,7 +42,6 @@ class SmtpClientConfigBuilderTest {
 		assertSame(SslClientConfig.DEFAULT, config.tlsConfig());
 		assertEquals(StandardCharsets.UTF_8, config.defaultCharset());
 		assertEquals(8192, config.bufferSize());
-		assertNull(config.onError());
 	}
 	
 	@Test
@@ -156,22 +152,6 @@ class SmtpClientConfigBuilderTest {
 	}
 	
 	@Test
-	void onErrorReturnsSameBuilderWithHandler() {
-		SmtpClientConfigBuilder builder = SmtpClientConfig.builder();
-		
-		assertSame(builder, builder.onError(NO_OP));
-		assertSame(NO_OP, builder.build().onError());
-	}
-	
-	@Test
-	void onErrorWithNull() {
-		SmtpClientConfigBuilder builder = SmtpClientConfig.builder();
-		
-		assertSame(builder, builder.onError(null));
-		assertNull(builder.build().onError());
-	}
-	
-	@Test
 	void buildWithMinimumBufferSize() {
 		SmtpClientConfig config = SmtpClientConfig.builder().bufferSize(1).build();
 		
@@ -230,8 +210,7 @@ class SmtpClientConfigBuilderTest {
 			.ehloHostname("smtp.example.com")
 			.tlsConfig(SslClientConfig.DEFAULT)
 			.defaultCharset(StandardCharsets.US_ASCII)
-			.bufferSize(4096)
-			.onError(NO_OP);
+			.bufferSize(4096);
 		
 		assertSame(builder, chained);
 		SmtpClientConfig config = chained.build();
@@ -249,7 +228,6 @@ class SmtpClientConfigBuilderTest {
 			.tlsConfig(SslClientConfig.DEFAULT)
 			.defaultCharset(StandardCharsets.ISO_8859_1)
 			.bufferSize(2048)
-			.onError(NO_OP)
 			.build();
 		
 		assertEquals(SmtpSecurity.IMPLICIT_TLS, config.security());
@@ -258,7 +236,6 @@ class SmtpClientConfigBuilderTest {
 		assertSame(SslClientConfig.DEFAULT, config.tlsConfig());
 		assertEquals(StandardCharsets.ISO_8859_1, config.defaultCharset());
 		assertEquals(2048, config.bufferSize());
-		assertSame(NO_OP, config.onError());
 	}
 	
 	@Test

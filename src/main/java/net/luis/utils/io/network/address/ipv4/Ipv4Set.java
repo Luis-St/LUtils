@@ -199,6 +199,22 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		return result;
 	}
 	
+	/**
+	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
+	 *
+	 * @param start The start address
+	 * @param end The end address
+	 * @return The minimal prefix length
+	 */
+	private static int calculateMinimalPrefixLength(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
+		int xor = start.value() ^ end.value();
+		if (xor == 0) {
+			return 32;
+		}
+		
+		return Integer.numberOfLeadingZeros(xor);
+	}
+	
 	@Override
 	public boolean isEmpty() {
 		return this.ranges.isEmpty();
@@ -403,22 +419,6 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 			result.addAll(range.toCidrNetworks());
 		}
 		return result;
-	}
-	
-	/**
-	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
-	 *
-	 * @param start The start address
-	 * @param end The end address
-	 * @return The minimal prefix length
-	 */
-	private static int calculateMinimalPrefixLength(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
-		int xor = start.value() ^ end.value();
-		if (xor == 0) {
-			return 32;
-		}
-		
-		return Integer.numberOfLeadingZeros(xor);
 	}
 	
 	@Override

@@ -43,6 +43,7 @@ public class ModificationException extends RuntimeException {
 	
 	/**
 	 * Constructs a new modification exception with the specified message and cause.<br>
+	 *
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */

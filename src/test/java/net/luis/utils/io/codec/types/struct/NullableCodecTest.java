@@ -73,7 +73,7 @@ class NullableCodecTest {
 	
 	@Test
 	void encodeWithNullValueJava() throws EncoderException {
-		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
+		JavaTypeProvider typeProvider = JavaTypeProvider.STRICT;
 		Codec<Integer> codec = new NullableCodec<>(INTEGER);
 		Object current = typeProvider.empty();
 		
@@ -137,7 +137,7 @@ class NullableCodecTest {
 	
 	@Test
 	void decodeWithNullValueJava() throws DecoderException {
-		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
+		JavaTypeProvider typeProvider = JavaTypeProvider.STRICT;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		
 		String result = codec.decode(typeProvider, typeProvider.empty(), null);
@@ -175,7 +175,7 @@ class NullableCodecTest {
 	
 	@Test
 	void decodeWithValidValueJava() throws DecoderException {
-		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
+		JavaTypeProvider typeProvider = JavaTypeProvider.STRICT;
 		Codec<String> codec = new NullableCodec<>(STRING);
 		
 		String result = codec.decode(typeProvider, typeProvider.empty(), "test");
@@ -245,16 +245,14 @@ class NullableCodecTest {
 	
 	@Test
 	void roundTripEncodingAndDecodingJava() throws Exception {
-		JavaTypeProvider typeProvider = JavaTypeProvider.INSTANCE;
+		JavaTypeProvider typeProvider = JavaTypeProvider.STRICT;
 		Codec<Boolean> codec = new NullableCodec<>(BOOLEAN);
 		Object current = typeProvider.empty();
 		
-		// Test with null value
 		Object encodedNull = codec.encode(typeProvider, current, null);
 		Boolean decodedNull = codec.decode(typeProvider, typeProvider.empty(), encodedNull);
 		assertNull(decodedNull);
 		
-		// Test with non-null value
 		Object encodedValue = codec.encode(typeProvider, current, true);
 		Boolean decodedValue = codec.decode(typeProvider, typeProvider.empty(), encodedValue);
 		assertTrue(decodedValue);

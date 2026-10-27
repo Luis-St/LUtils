@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.*;
+import net.luis.utils.io.network.connection.*;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -27,24 +27,22 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Configuration options for TCP servers.<br>
- * This record provides settings for TCP server behavior such as backlog, client settings, and event handlers.<br>
+ * Configuration options for stream servers.<br>
+ * <p>
+ *     This record holds the transport settings of a {@link TcpServer} and the transport part of an SSL server configuration.<br>
+ *     The only callback is the error handler, which receives the failures that occur on the threads of the server.<br>
+ *     What happens on a connection is decided by the {@link ConnectionHandler} the server is created with.
+ * </p>
  * <p>
  *     Example usage:
  * </p>
  * <pre>{@code
  * TcpServerConfig config = TcpServerConfig.builder()
  *     .backlog(100)
- *     .executorStrategy(ClientExecutorStrategy.virtualThreads())
- *     .onClientConnect(event -> System.out.println("Client connected: " + event.remoteEndpoint()))
- *     .onMessage((server, conn, data) -> {
- *         conn.send(("Echo: " + new String(data)).getBytes());
- *     })
+ *     .clientReadTimeout(Duration.ofMinutes(5))
+ *     .executorStrategy(ClientExecutorStrategy.fixedPool(10))
+ *     .onError((client, error) -> error.printStackTrace())
  *     .build();
- *
- * try (TcpServer server = new TcpServer(bindEndpoint, config)) {
- *     server.start();
- * }
  * }</pre>
  *
  * @see TcpServerConfigBuilder
@@ -52,74 +50,69 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
- * @param backlog Maximum number of pending connections in the queue
- * @param clientBufferSize Buffer size for each client connection in bytes
- * @param clientReadTimeout Read timeout for client connections (Duration.ZERO for infinite)
- * @param tcpNoDelay Whether to disable Nagle's algorithm for client connections
- * @param keepAlive Whether to enable TCP keep-alive for client connections
- * @param executorStrategy How to handle concurrent client connections
- * @param onClientConnect Handler called when a client connects
- * @param onClientDisconnect Handler called when a client disconnects
- * @param onMessage Handler called when a message is received from a client
- * @param onError Handler called when an error occurs
+ * @param backlog The maximum number of pending connections in the queue
+ * @param maxMessageSize The maximum length of a message in bytes
+ * @param framing The framing that delimits messages on the stream
+ * @param clientReadTimeout The maximum time a receive on a connection waits for data, or null to wait forever
+ * @param tcpNoDelay Whether to disable Nagle's algorithm for the connections
+ * @param keepAlive Whether to enable TCP keep-alive for the connections
+ * @param executorStrategy The strategy that creates the executor the connections are served on
+ * @param onError The handler for failures on the threads of the server, or null to use the uncaught exception handler
  */
 public record TcpServerConfig(
 	int backlog,
-	int clientBufferSize,
-	@NonNull Duration clientReadTimeout,
+	int maxMessageSize,
+	@NonNull Framing framing,
+	@Nullable Duration clientReadTimeout,
 	boolean tcpNoDelay,
 	boolean keepAlive,
 	@NonNull ClientExecutorStrategy executorStrategy,
-	@Nullable ConnectionEventHandler onClientConnect,
-	@Nullable ConnectionEventHandler onClientDisconnect,
-	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
-	@Nullable ErrorEventHandler onError
+	@Nullable ErrorHandler onError
 ) {
 	
 	/**
-	 * Default configuration for TCP servers.<br>
+	 * Default configuration for stream servers.<br>
 	 * <ul>
 	 *     <li>{@link #backlog} = {@code 50}</li>
-	 *     <li>{@link #clientBufferSize} = {@code 8192}</li>
-	 *     <li>{@link #clientReadTimeout} = {@code Duration.ZERO} (infinite)</li>
+	 *     <li>{@link #maxMessageSize} = {@code 8192}</li>
+	 *     <li>{@link #framing} = {@link Framing#lengthPrefixed()}</li>
+	 *     <li>{@link #clientReadTimeout} = {@code null} (wait forever)</li>
 	 *     <li>{@link #tcpNoDelay} = {@code true}</li>
 	 *     <li>{@link #keepAlive} = {@code true}</li>
-	 *     <li>{@link #executorStrategy} = {@code virtualThreads()}</li>
-	 *     <li>All handlers = {@code null}</li>
+	 *     <li>{@link #executorStrategy} = {@link ClientExecutorStrategy#virtualThreads()}</li>
+	 *     <li>{@link #onError} = {@code null} (uncaught exception handler)</li>
 	 * </ul>
 	 */
-	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
+	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, Framing.lengthPrefixed(), null, true, true, ClientExecutorStrategy.virtualThreads(), null);
 	
 	/**
-	 * Constructs a new TCP server configuration.<br>
+	 * Constructs a new stream server configuration.<br>
 	 *
-	 * @param backlog Maximum number of pending connections
-	 * @param clientBufferSize Buffer size for client connections
-	 * @param clientReadTimeout Read timeout for client connections
-	 * @param tcpNoDelay Whether to disable Nagle's algorithm
-	 * @param keepAlive Whether to enable TCP keep-alive
-	 * @param executorStrategy How to handle concurrent clients
-	 * @param onClientConnect Handler for client connections
-	 * @param onClientDisconnect Handler for client disconnections
-	 * @param onMessage Handler for incoming messages
-	 * @param onError Handler for errors
-	 * @throws NullPointerException If clientReadTimeout or executorStrategy is null
-	 * @throws IllegalArgumentException If backlog or clientBufferSize is less than 1
+	 * @param backlog The maximum number of pending connections in the queue
+	 * @param maxMessageSize The maximum length of a message in bytes
+	 * @param framing The framing that delimits messages on the stream
+	 * @param clientReadTimeout The maximum time a receive on a connection waits for data, or null to wait forever
+	 * @param tcpNoDelay Whether to disable Nagle's algorithm for the connections
+	 * @param keepAlive Whether to enable TCP keep-alive for the connections
+	 * @param executorStrategy The strategy that creates the executor the connections are served on
+	 * @param onError The handler for failures on the threads of the server, or null to use the uncaught exception handler
+	 * @throws NullPointerException If the framing or the executor strategy is null
+	 * @throws IllegalArgumentException If the backlog or the max message size is less than 1 or the client read timeout is not positive
 	 */
 	public TcpServerConfig {
-		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
+		Objects.requireNonNull(framing, "Framing must not be null");
 		Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
-		
+		NetworkUtils.validateTimeout(clientReadTimeout, "Client read timeout");
 		if (backlog < 1) {
 			throw new IllegalArgumentException("Backlog must be at least 1: " + backlog);
 		}
-		if (clientBufferSize < 1) {
-			throw new IllegalArgumentException("Client buffer size must be at least 1: " + clientBufferSize);
+		if (maxMessageSize < 1) {
+			throw new IllegalArgumentException("Max message size must be at least 1: " + maxMessageSize);
 		}
 	}
 	
 	/**
-	 * Creates a new builder for constructing TCP server configuration.<br>
+	 * Creates a new builder for constructing a stream server configuration.<br>
 	 * @return A new builder with default values
 	 */
 	public static @NonNull TcpServerConfigBuilder builder() {

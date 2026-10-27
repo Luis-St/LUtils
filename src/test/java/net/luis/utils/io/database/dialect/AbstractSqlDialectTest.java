@@ -26,21 +26,26 @@ import net.luis.utils.io.database.exception.client.dialect.*;
 import net.luis.utils.io.database.expression.orderable.*;
 import net.luis.utils.io.database.function.window.*;
 import net.luis.utils.io.database.index.SqlIndexMethod;
-import net.luis.utils.io.database.query.SqlLockMode;
-import net.luis.utils.io.database.query.SqlSetOperation;
+import net.luis.utils.io.database.query.*;
+import net.luis.utils.io.database.query.util.SqlSetClause;
+import net.luis.utils.io.database.query.util.SqlSetType;
 import net.luis.utils.io.database.rendering.SqlRendered;
 import net.luis.utils.io.database.rendering.SqlRenderer;
 import net.luis.utils.io.database.table.SqlColumn;
-import net.luis.utils.io.database.type.SqlType;
-import net.luis.utils.io.database.type.SqlTypes;
+import net.luis.utils.io.database.table.SqlTable;
+import net.luis.utils.io.database.type.*;
 import net.luis.utils.io.database.type.parameter.SqlParameter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.*;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,9 +68,7 @@ class AbstractSqlDialectTest {
 		DIALECT.renderReferentialAction(renderer, action);
 		return sql(renderer.toSql());
 	}
-	//endregion
 	
-	//region Tier 1 - Constructors
 	@Test
 	void constructInitializesRegistryAndRenderer() {
 		TestDialect dialect = new TestDialect();
@@ -76,7 +79,6 @@ class AbstractSqlDialectTest {
 		assertNotNull(dialect.schemaRenderer());
 	}
 	
-	//region Tier 2 - Exceptions
 	@Test
 	void isTypeSupportedNullType() {
 		assertThrows(NullPointerException.class, () -> DIALECT.isTypeSupported(null));
@@ -246,7 +248,12 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseNullUpdateColumns() {
-		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), null));
+		assertThrows(NullPointerException.class, () -> DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), null));
+	}
+	
+	@Test
+	void upsertExcludedValueNullColumn() {
+		assertThrows(NullPointerException.class, () -> DIALECT.upsertExcludedValue(null));
 	}
 	
 	@Test
@@ -281,21 +288,25 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertStatementUnsupportedByDefault() {
-		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), SqlTestFixtures.integerColumn(), SqlRendered.of("")));
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), List.of(SqlTestFixtures.integerColumn()), SqlRendered.of("")));
+	}
+	
+	@Test
+	void renderUpsertStatementMultipleConflictColumnsUnsupportedByDefault() {
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
+		assertThrows(SqlDialectFeatureException.class, () -> DIALECT.renderUpsertStatement(SqlTestFixtures.sampleTable(), List.of(), conflictColumns, SqlRendered.of("")));
 	}
 	
 	@Test
 	void renderInsertOrIgnoreModifierUnsupportedByDefault() {
 		assertThrows(SqlDialectFeatureException.class, DIALECT::renderInsertOrIgnoreModifier);
 	}
-	//endregion
 	
 	@Test
 	void renderOrderingItemUnknownOrderableThrows() {
 		assertThrows(SqlDialectException.class, () -> DIALECT.renderOrderingItem(SqlRenderer.empty(), new DummyOrderable()));
 	}
 	
-	//region Tier 3 - Branch coverage
 	@Test
 	void isTypeSupportedResolvableType() {
 		assertTrue(DIALECT.isTypeSupported(SqlTypes.INTEGER));
@@ -624,26 +635,66 @@ class AbstractSqlDialectTest {
 	
 	@Test
 	void renderUpsertClauseSingleColumn() throws SqlException {
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of(SqlTestFixtures.stringColumn())));
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlSetClause<Object, String> updateClause = new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of(updateClause)));
 		assertTrue(sql.contains("CONFLICT"));
-		assertTrue(sql.contains("EXCLUDED.\"name\""));
+		assertTrue(sql.contains("excluded"));
+		assertTrue(sql.contains("\"name\""));
 		assertFalse(sql.contains(","));
 	}
 	
 	@Test
 	void renderUpsertClauseMultipleColumns() throws SqlException {
-		List<SqlColumn<?, ?>> updates = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), updates));
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		List<SqlSetClause<?, ?>> updates = List.of(
+			new SqlSetClause<>(integerColumn, integerColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION),
+			new SqlSetClause<>(stringColumn, stringColumn.of(SqlAlias.EXCLUDED), SqlSetType.EXPRESSION)
+		);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), updates));
 		assertTrue(sql.contains(","));
-		assertTrue(sql.contains("EXCLUDED.\"id\""));
-		assertTrue(sql.contains("EXCLUDED.\"name\""));
+		assertTrue(sql.contains("excluded"));
+		assertTrue(sql.contains("\"id\""));
+		assertTrue(sql.contains("\"name\""));
 	}
 	
 	@Test
 	void renderUpsertClauseEmptyColumns() throws SqlException {
-		String sql = sql(DIALECT.renderUpsertClause(SqlTestFixtures.integerColumn(), List.of()));
+		String sql = sql(DIALECT.renderUpsertClause(List.of(SqlTestFixtures.integerColumn()), List.of()));
 		assertTrue(sql.contains("DO"));
 		assertFalse(sql.contains("EXCLUDED."));
+	}
+	
+	@Test
+	void renderUpsertClauseCompositeConflictColumns() throws SqlException {
+		List<SqlColumn<?, ?>> conflictColumns = List.of(SqlTestFixtures.integerColumn(), SqlTestFixtures.stringColumn());
+		String sql = sql(DIALECT.renderUpsertClause(conflictColumns, List.of()));
+		assertTrue(sql.contains("CONFLICT"));
+		assertTrue(sql.contains("\"id\""));
+		assertTrue(sql.contains("\"name\""));
+		assertTrue(sql.contains(","));
+	}
+	
+	@Test
+	void renderUpsertClauseMultipleSetClausesWithCustomExpressions() throws SqlException {
+		SqlColumn<Object, String> stringColumn = SqlTestFixtures.stringColumn();
+		SqlColumn<Object, Integer> integerColumn = SqlTestFixtures.integerColumn();
+		List<SqlSetClause<?, ?>> updates = List.of(
+			new SqlSetClause<>(stringColumn, SqlTestFixtures.stringExpression(), SqlSetType.EXPRESSION),
+			new SqlSetClause<>(integerColumn, null, SqlSetType.NULL)
+		);
+		String sql = sql(DIALECT.renderUpsertClause(List.of(integerColumn), updates));
+		assertTrue(sql.contains(","));
+		assertTrue(sql.contains("\"name\""));
+		assertTrue(sql.contains("\"id\""));
+		assertFalse(sql.contains("EXCLUDED."));
+	}
+	
+	@Test
+	void upsertExcludedValueReturnsColumnOfExcluded() throws SqlException {
+		SqlColumn<Object, Integer> column = SqlTestFixtures.integerColumn();
+		assertEquals(column.of(SqlAlias.EXCLUDED), DIALECT.upsertExcludedValue(column));
 	}
 	
 	@Test
@@ -673,9 +724,7 @@ class AbstractSqlDialectTest {
 	void getCheckConstraintsNullQueryReturnsEmpty() throws SqlException {
 		assertTrue(DIALECT.getCheckConstraints(SqlTestFixtures.placeholderConnection(), "public", "test_table").isEmpty());
 	}
-	//endregion
 	
-	//region Tier 4 - Simple inputs
 	@Test
 	void readXmlElementNullReturnsNull() throws SQLException {
 		assertNull(AbstractSqlDialect.readXmlElement(null));
@@ -717,9 +766,7 @@ class AbstractSqlDialectTest {
 		SqlRendered rendered = DIALECT.renderCondition(SqlTestFixtures.alwaysCondition());
 		assertNotNull(rendered);
 	}
-	//endregion
 	
-	//region Tier 5 - Complex inputs
 	@Test
 	void getCreateSchemaColumnsTableSqlStructure() throws SqlException {
 		String sql = DIALECT.getCreateSchemaColumnsTableSql();
@@ -744,7 +791,7 @@ class AbstractSqlDialectTest {
 	void getInsertSchemaColumnSqlPlaceholders() {
 		String sql = DIALECT.getInsertSchemaColumnSql();
 		assertTrue(sql.startsWith("INSERT INTO"));
-		assertTrue(sql.endsWith("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+		assertTrue(sql.endsWith("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 	}
 	
 	@Test
@@ -780,9 +827,303 @@ class AbstractSqlDialectTest {
 		assertTrue(sql.startsWith("DELETE FROM"));
 		assertTrue(sql.contains("WHERE \"version\" = ?"));
 	}
-	//endregion
 	
-	//region Test fixtures
+	@Test
+	void resolveTypeWithNullNativeType() {
+		assertThrows(NullPointerException.class, () -> DIALECT.resolveType(null));
+	}
+	
+	@Test
+	void resolveNativeTypeWithNullNativeType() {
+		HookDialect dialect = new HookDialect();
+		assertThrows(NullPointerException.class, () -> dialect.resolveNativeType(null));
+	}
+	
+	@Test
+	void resolveTypeFromRegistry() {
+		assertEquals(Optional.of(SqlTypes.UUID), new RegistryDialect().resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromRegistryIgnoringCaseAndArguments() {
+		RegistryDialect dialect = new RegistryDialect();
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "UUID", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, "UUID(0)", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromDialectHook() {
+		assertEquals(Optional.of(SqlTypes.TEXT), new HookDialect().resolveType(new SqlNativeType(Types.OTHER, "custom", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFallsBackToPortableMapper() {
+		assertEquals(Optional.of(SqlTypes.INTEGER), DIALECT.resolveType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypeReturnsEmptyForUnknownNativeType() {
+		assertEquals(Optional.empty(), assertDoesNotThrow(() -> DIALECT.resolveType(new SqlNativeType(Types.OTHER, "geometry", 0, 0))));
+	}
+	
+	@Test
+	void resolveTypePrefersRegistryOverHook() {
+		assertEquals(Optional.of(SqlTypes.UUID), new ShadowingDialect().resolveType(new SqlNativeType(Types.OTHER, "custom", 0, 0)));
+	}
+	
+	@Test
+	void resolveTypeFromRegistryIgnoresJdbcTypeCode() {
+		assertEquals(Optional.of(SqlTypes.UUID), new RegistryDialect().resolveType(new SqlNativeType(Types.INTEGER, "uuid", 10, 0)));
+	}
+	
+	@Test
+	void resolveTypePrefersHookOverPortableMapper() {
+		assertEquals(Optional.of(SqlTypes.TEXT), new HookDialect().resolveType(new SqlNativeType(Types.VARCHAR, "text", Integer.MAX_VALUE, 0)));
+	}
+	
+	@Test
+	void resolveNativeTypeReturnsEmptyByDefault() {
+		TestDialect dialect = new TestDialect();
+		assertEquals(Optional.empty(), dialect.resolveNativeType(new SqlNativeType(Types.OTHER, "uuid", 0, 0)));
+		assertEquals(Optional.empty(), dialect.resolveNativeType(new SqlNativeType(Types.INTEGER, "int4", 10, 0)));
+	}
+	
+	@Test
+	void getCreateSchemaColumnsTableSqlContainsTypeIdentifier() throws SqlException {
+		String sql = DIALECT.getCreateSchemaColumnsTableSql();
+		assertTrue(sql.contains("type_identifier"));
+		assertFalse(sql.contains("type_identifier\" VARCHAR(64) NOT NULL"));
+	}
+	
+	@Test
+	void getInsertSchemaColumnSqlColumnOrderMatchesPlaceholders() {
+		String sql = DIALECT.getInsertSchemaColumnSql();
+		String columns = sql.substring(sql.indexOf('(') + 1, sql.indexOf(')'));
+		String placeholders = sql.substring(sql.lastIndexOf('(') + 1, sql.lastIndexOf(')'));
+		assertEquals(columns.split(",").length, placeholders.split(",").length);
+		assertTrue(columns.contains("ordinal_position"));
+		assertTrue(columns.trim().endsWith("type_identifier\""));
+	}
+	
+	@Test
+	void resolveTypeInvertsGetTypeNameForRegisteredTypes() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect();
+		String rendered = dialect.getTypeName(SqlTypes.UUID);
+		assertEquals("UUID", rendered);
+		assertEquals(Optional.of(SqlTypes.UUID), dialect.resolveType(new SqlNativeType(Types.OTHER, rendered, 0, 0)));
+	}
+	
+	@Test
+	void schemaColumnsTableSqlAndInsertSqlAgreeOnColumns() throws SqlException {
+		String createSql = DIALECT.getCreateSchemaColumnsTableSql();
+		String insertSql = DIALECT.getInsertSchemaColumnSql();
+		String columns = insertSql.substring(insertSql.indexOf('(') + 1, insertSql.indexOf(')'));
+		for (String column : columns.split(",")) {
+			assertTrue(createSql.contains(column.trim()), "Created table is missing " + column.trim());
+		}
+	}
+	
+	@Test
+	void constructWithAdditionalTypesKeepsOwnMappings() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build());
+		assertEquals("UUID", dialect.getTypeName(SqlTypes.UUID));
+		assertEquals("JSONB", dialect.getTypeName(SqlTypes.JSON));
+	}
+	
+	@Test
+	void constructWithEmptyAdditionalTypesMatchesNoArgConstructor() throws SqlException {
+		RegistryDialect plain = new RegistryDialect();
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.empty());
+		assertEquals(plain.getTypeName(SqlTypes.UUID), dialect.getTypeName(SqlTypes.UUID));
+		assertEquals(plain.getTypeName(SqlTypes.INTEGER), dialect.getTypeName(SqlTypes.INTEGER));
+		assertEquals(plain.getTypeName(SqlTypes.BOOLEAN), dialect.getTypeName(SqlTypes.BOOLEAN));
+	}
+	
+	@Test
+	void constructWithNullAdditionalTypes() {
+		assertThrows(NullPointerException.class, () -> new RegistryDialect(null));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesUnknownTypeStillThrows() {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.JSON, "JSONB").build());
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> dialect.getTypeName(UNSUPPORTED_TYPE));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesOverridingOwnMapping() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build());
+		assertEquals("UUID", new RegistryDialect().getTypeName(SqlTypes.UUID));
+		assertEquals("CUSTOM", dialect.getTypeName(SqlTypes.UUID));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesAddingNewMapping() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.XML, "XML").build());
+		assertTrue(dialect.isTypeSupported(SqlTypes.UUID));
+		assertTrue(dialect.isTypeSupported(SqlTypes.XML));
+		assertEquals("UUID", dialect.getTypeName(SqlTypes.UUID));
+		assertEquals("XML", dialect.getTypeName(SqlTypes.XML));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesUsesCustomBinderAndReader() throws Exception {
+		AtomicReference<Object> bound = new AtomicReference<>();
+		SqlTypeRegistry additional = SqlTypeRegistry.builder()
+			.register(SqlTypes.XML, "XML", (statement, index, value) -> bound.set(value), (resultSet, index) -> "read")
+			.build();
+		RegistryDialect dialect = new RegistryDialect(additional);
+		
+		assertEquals("XML", dialect.getTypeName(SqlTypes.XML));
+		dialect.bindingOverride(SqlTypes.XML).orElseThrow().bind(null, 1, "value");
+		assertEquals("value", bound.get());
+		assertEquals("read", dialect.readingOverride(SqlTypes.XML).orElseThrow().read(null, 1));
+	}
+	
+	@Test
+	void constructWithAdditionalTypesAffectsRendererOutput() throws SqlException {
+		RegistryDialect dialect = new RegistryDialect(SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM_UUID").build());
+		SqlTable<Object> table = SqlTable.create(Object.class, "users");
+		assertNotNull(table.column("id", SqlTypes.UUID, object -> null));
+		
+		String sql = dialect.tableRenderer().renderCreateTable(table, false).sql();
+		assertTrue(sql.contains("CUSTOM_UUID"), sql);
+		assertFalse(sql.contains("CHAR(36)"), sql);
+	}
+	
+	@Test
+	void renderValueLiteralWithNegativeNumber() throws SqlException {
+		assertEquals("-1", DIALECT.renderValueLiteral(-1));
+	}
+	
+	@Test
+	void renderValueLiteralWithDecimalNumber() throws SqlException {
+		assertEquals("12.34", DIALECT.renderValueLiteral(new BigDecimal("12.34")));
+	}
+	
+	@Test
+	void renderValueLiteralWithBooleanFalse() throws SqlException {
+		assertEquals("FALSE", DIALECT.renderValueLiteral(false));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyString() throws SqlException {
+		assertEquals("''", DIALECT.renderValueLiteral(""));
+	}
+	
+	@Test
+	void renderValueLiteralWithStringOfOnlyQuotes() throws SqlException {
+		assertEquals("''''''", DIALECT.renderValueLiteral("''"));
+	}
+	
+	@Test
+	void renderValueLiteralWithObjectArrayThrows() {
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new String[] { "A", "B" }));
+		assertTrue(thrown.getMessage().contains("String[]"));
+	}
+	
+	@Test
+	void renderValueLiteralWithByteArrayThrows() {
+		SqlDialectUnsupportedRenderingException thrown = assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new byte[] { 1, 2 }));
+		assertTrue(thrown.getMessage().contains("byte[]"));
+	}
+	
+	@Test
+	void renderValueLiteralWithEmptyArrayThrows() {
+		assertThrows(SqlDialectUnsupportedRenderingException.class, () -> DIALECT.renderValueLiteral(new String[0]));
+	}
+	
+	@Test
+	void renderValueLiteralWithUuid() throws SqlException {
+		UUID id = UUID.fromString("11111111-2222-3333-4444-555555555555");
+		assertEquals("'11111111-2222-3333-4444-555555555555'", DIALECT.renderValueLiteral(id));
+	}
+	
+	@Test
+	void renderValueLiteralWithLocalDate() throws SqlException {
+		assertEquals("'2024-01-15'", DIALECT.renderValueLiteral(LocalDate.of(2024, 1, 15)));
+	}
+	
+	@Test
+	void renderValueLiteralWithEnumValue() throws SqlException {
+		assertEquals("'BTREE'", DIALECT.renderValueLiteral(SqlIndexMethod.BTREE));
+	}
+	
+	@Test
+	void renderValueLiteralWithLocalDateTime() throws SqlException {
+		assertEquals("'2024-01-15T10:00'", DIALECT.renderValueLiteral(LocalDateTime.of(2024, 1, 15, 10, 0)));
+	}
+	
+	//region Helper classes
+	private static final class RegistryDialect extends AbstractSqlDialect {
+		
+		private RegistryDialect() {}
+		
+		private RegistryDialect(@NonNull SqlTypeRegistry additionalTypes) {
+			super(additionalTypes);
+		}
+		
+		@Override
+		public @NonNull String name() {
+			return "Registry";
+		}
+		
+		@Override
+		protected @NonNull SqlTypeRegistry createTypeRegistry() {
+			return SqlTypeRegistry.builder().register(SqlTypes.UUID, "UUID").build();
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
+	private static final class HookDialect extends AbstractSqlDialect {
+		
+		@Override
+		public @NonNull String name() {
+			return "Hook";
+		}
+		
+		@Override
+		protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+			return switch (nativeType.normalizedTypeName()) {
+				case "custom", "text" -> Optional.of(SqlTypes.TEXT);
+				default -> super.resolveNativeType(nativeType);
+			};
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
+	private static final class ShadowingDialect extends AbstractSqlDialect {
+		
+		@Override
+		public @NonNull String name() {
+			return "Shadowing";
+		}
+		
+		@Override
+		protected @NonNull SqlTypeRegistry createTypeRegistry() {
+			return SqlTypeRegistry.builder().register(SqlTypes.UUID, "CUSTOM").build();
+		}
+		
+		@Override
+		protected @NonNull Optional<SqlType<?>> resolveNativeType(@NonNull SqlNativeType nativeType) {
+			return "custom".equals(nativeType.normalizedTypeName()) ? Optional.of(SqlTypes.TEXT) : super.resolveNativeType(nativeType);
+		}
+		
+		@Override
+		protected @Nullable String getCheckConstraintsQueryString() {
+			return null;
+		}
+	}
+	
 	private static final class TestDialect extends AbstractSqlDialect {
 		
 		private final String checkQuery;

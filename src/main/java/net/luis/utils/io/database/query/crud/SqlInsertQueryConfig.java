@@ -24,6 +24,8 @@ import net.luis.utils.io.database.audit.SqlAuditUserProvider;
 import net.luis.utils.io.database.dialect.SqlDialect;
 import net.luis.utils.io.database.exception.SqlException;
 import net.luis.utils.io.database.exception.client.SqlStatementBuilderException;
+import net.luis.utils.io.database.query.util.SqlColumnValue;
+import net.luis.utils.io.database.query.util.SqlSetClause;
 import net.luis.utils.io.database.table.SqlColumn;
 import net.luis.utils.io.database.table.SqlTable;
 import org.jspecify.annotations.NonNull;
@@ -48,8 +50,12 @@ import java.util.Objects;
  * @param rowMapper The row mapper used to map result rows to entities
  * @param entities The entities to insert
  * @param fromSelect The select query providing the rows for an insert-from-select query, or {@code null}
- * @param conflictColumn The conflict column used for upsert queries, or {@code null}
- * @param conflictColumns The conflict columns used for insert-or-ignore queries, or {@code null}
+ * @param conflictColumns The conflict columns used for upsert or insert-or-ignore queries, or {@code null}
+ * @param upsertUpdateClauses The custom set clauses applied on conflict for upsert queries, or {@code null} to update every
+ * non-conflict column with its proposed value
+ * @param omittedColumns The columns to omit from the rendered value tuple in addition to auto-increment columns, which are
+ * always omitted
+ * @param overrides The columns whose value is computed from a custom expression instead of the entity getter
  * @param isUpsert Whether this is an upsert query
  * @param isInsertOrIgnore Whether this is an insert-or-ignore query
  * @param isInsertFromSelect Whether this is an insert-from-select query
@@ -63,8 +69,10 @@ record SqlInsertQueryConfig<E>(
 	@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 	@NonNull List<E> entities,
 	@Nullable SqlSelectQuery<?> fromSelect,
-	@Nullable SqlColumn<E, ?> conflictColumn,
 	@Nullable List<SqlColumn<E, ?>> conflictColumns,
+	@Nullable List<SqlSetClause<E, ?>> upsertUpdateClauses,
+	@NonNull List<SqlColumn<E, ?>> omittedColumns,
+	@NonNull List<SqlColumnValue<E, ?>> overrides,
 	boolean isUpsert,
 	boolean isInsertOrIgnore,
 	boolean isInsertFromSelect,
@@ -74,7 +82,8 @@ record SqlInsertQueryConfig<E>(
 	/**
 	 * Constructs a new insert query configuration validating the required components.<br>
 	 *
-	 * @throws NullPointerException If the table, dialect, connection source, query timeout, row mapper or entities are null
+	 * @throws NullPointerException If the table, dialect, connection source, query timeout, row mapper, entities, omitted
+	 * columns or overrides are null
 	 * @throws IllegalArgumentException If the entities list is empty and this is not an insert-from-select query
 	 */
 	SqlInsertQueryConfig {
@@ -84,6 +93,8 @@ record SqlInsertQueryConfig<E>(
 		Objects.requireNonNull(queryTimeout, "Query timeout must not be null");
 		Objects.requireNonNull(rowMapper, "Row mapper must not be null");
 		Objects.requireNonNull(entities, "Entities must not be null");
+		Objects.requireNonNull(omittedColumns, "Sql omitted columns must not be null");
+		Objects.requireNonNull(overrides, "Sql overrides must not be null");
 		
 		if (entities.isEmpty() && !isInsertFromSelect) {
 			throw new IllegalArgumentException("Entities list must not be empty for insert queries");
@@ -100,16 +111,17 @@ record SqlInsertQueryConfig<E>(
 	 * @param rowMapper The row mapper used to map result rows to entities
 	 * @param entities The entities to insert
 	 * @param fromSelect The select query providing the rows for an insert-from-select query, or {@code null}
-	 * @param conflictColumn The conflict column used for upsert queries, or {@code null}
-	 * @param conflictColumns The conflict columns used for insert-or-ignore queries, or {@code null}
+	 * @param conflictColumns The conflict columns used for upsert or insert-or-ignore queries, or {@code null}
+	 * @param upsertUpdateClauses The custom set clauses applied on conflict for upsert queries, or {@code null} to update every
+	 * non-conflict column with its proposed value
 	 * @param isUpsert Whether this is an upsert query
 	 * @param isInsertOrIgnore Whether this is an insert-or-ignore query
 	 * @param isInsertFromSelect Whether this is an insert-from-select query
 	 * @param auditUserProvider The provider supplying the current user for audit columns, or {@code null}
 	 * @return The created insert query configuration
 	 * @param <E> The type of the entities to insert
-	 * @throws SqlStatementBuilderException If upsert and insert-or-ignore are combined, an upsert is missing its conflict column,
-	 * an insert-or-ignore is missing its conflict columns, or an insert-from-select is missing its source query
+	 * @throws SqlStatementBuilderException If upsert and insert-or-ignore are combined, an upsert or insert-or-ignore is missing
+	 * its conflict columns, or an insert-from-select is missing its source query
 	 */
 	static <E> @NonNull SqlInsertQueryConfig<E> create(
 		@NonNull SqlTable<E> table,
@@ -119,8 +131,8 @@ record SqlInsertQueryConfig<E>(
 		@NonNull ThrowableFunction<ResultSet, E, SqlException> rowMapper,
 		@NonNull List<E> entities,
 		@Nullable SqlSelectQuery<?> fromSelect,
-		@Nullable SqlColumn<E, ?> conflictColumn,
 		@Nullable List<SqlColumn<E, ?>> conflictColumns,
+		@Nullable List<SqlSetClause<E, ?>> upsertUpdateClauses,
 		boolean isUpsert,
 		boolean isInsertOrIgnore,
 		boolean isInsertFromSelect,
@@ -130,13 +142,9 @@ record SqlInsertQueryConfig<E>(
 			throw new SqlStatementBuilderException("Upsert and insert or ignore are mutually exclusive");
 		}
 		
-		if (isUpsert && conflictColumn == null) {
-			throw new SqlStatementBuilderException("Conflict column must be specified for upsert queries");
-		}
-		
-		if (isInsertOrIgnore) {
+		if (isUpsert || isInsertOrIgnore) {
 			if (conflictColumns == null || conflictColumns.isEmpty()) {
-				throw new SqlStatementBuilderException("Conflict columns must be specified for insert or ignore queries");
+				throw new SqlStatementBuilderException("Conflict columns must be specified for upsert and insert or ignore queries");
 			}
 		}
 		
@@ -144,6 +152,52 @@ record SqlInsertQueryConfig<E>(
 			throw new SqlStatementBuilderException("From select query must be specified for insert from select queries");
 		}
 		
-		return new SqlInsertQueryConfig<>(table, dialect, connectionSource, queryTimeout, rowMapper, entities, fromSelect, conflictColumn, conflictColumns, isUpsert, isInsertOrIgnore, isInsertFromSelect, auditUserProvider);
+		return new SqlInsertQueryConfig<>(
+			table, dialect, connectionSource, queryTimeout, rowMapper, entities, fromSelect, conflictColumns, upsertUpdateClauses,
+			List.of(), List.of(), isUpsert, isInsertOrIgnore, isInsertFromSelect, auditUserProvider
+		);
+	}
+	
+	/**
+	 * Creates a copy of this configuration with the given omitted columns.<br>
+	 *
+	 * @param omittedColumns The columns to omit from the rendered value tuple
+	 * @return The copied configuration
+	 * @throws NullPointerException If the omitted columns is null
+	 */
+	@NonNull SqlInsertQueryConfig<E> withOmittedColumns(@NonNull List<SqlColumn<E, ?>> omittedColumns) {
+		Objects.requireNonNull(omittedColumns, "Sql omitted columns must not be null");
+		return new SqlInsertQueryConfig<>(
+			this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.entities, this.fromSelect, this.conflictColumns, this.upsertUpdateClauses,
+			omittedColumns, this.overrides, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect, this.auditUserProvider
+		);
+	}
+	
+	/**
+	 * Creates a copy of this configuration with the given column value overrides.<br>
+	 *
+	 * @param overrides The columns whose value is computed from a custom expression instead of the entity getter
+	 * @return The copied configuration
+	 * @throws NullPointerException If the overrides is null
+	 */
+	@NonNull SqlInsertQueryConfig<E> withOverrides(@NonNull List<SqlColumnValue<E, ?>> overrides) {
+		Objects.requireNonNull(overrides, "Sql overrides must not be null");
+		return new SqlInsertQueryConfig<>(
+			this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.entities, this.fromSelect, this.conflictColumns, this.upsertUpdateClauses,
+			this.omittedColumns, overrides, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect, this.auditUserProvider
+		);
+	}
+	
+	/**
+	 * Creates a copy of this configuration with the given audit user provider.<br>
+	 *
+	 * @param auditUserProvider The provider supplying the current user for audit columns, or {@code null} for no audit user
+	 * @return The copied configuration
+	 */
+	@NonNull SqlInsertQueryConfig<E> withAuditUserProvider(@Nullable SqlAuditUserProvider auditUserProvider) {
+		return new SqlInsertQueryConfig<>(
+			this.table, this.dialect, this.connectionSource, this.queryTimeout, this.rowMapper, this.entities, this.fromSelect, this.conflictColumns, this.upsertUpdateClauses,
+			this.omittedColumns, this.overrides, this.isUpsert, this.isInsertOrIgnore, this.isInsertFromSelect, auditUserProvider
+		);
 	}
 }

@@ -32,6 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class IndexedValueGetterTest {
 	
+	private static @NonNull IndexedValueGetter createGetter(@NonNull String value) {
+		ListIndexedValueGetter getter = new ListIndexedValueGetter();
+		getter.add(value);
+		return getter;
+	}
+	
 	@Test
 	void getAsStringReturnsValue() {
 		IndexedValueGetter getter = createGetter("value");
@@ -258,12 +264,6 @@ class IndexedValueGetterTest {
 		assertEquals(10, getter.getAsInteger(0));
 		assertEquals(20, getter.getAsInteger(1));
 		assertEquals(30, getter.getAsInteger(2));
-	}
-	
-	private static @NonNull IndexedValueGetter createGetter(@NonNull String value) {
-		ListIndexedValueGetter getter = new ListIndexedValueGetter();
-		getter.add(value);
-		return getter;
 	}
 	
 	private static class ListIndexedValueGetter implements IndexedValueGetter {

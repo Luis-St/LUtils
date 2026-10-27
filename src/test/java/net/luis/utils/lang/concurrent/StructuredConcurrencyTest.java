@@ -237,7 +237,7 @@ class StructuredConcurrencyTest {
 	@Test
 	void joinNullDuration() {
 		try (StructuredConcurrency scope = new StructuredConcurrency()) {
-			assertThrows(NullPointerException.class, () -> scope.join((Duration) null));
+			assertThrows(NullPointerException.class, () -> scope.join(null));
 		}
 	}
 	

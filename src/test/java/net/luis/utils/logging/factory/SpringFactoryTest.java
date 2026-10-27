@@ -170,7 +170,7 @@ class SpringFactoryTest {
 		SpringFactory factory = new SpringFactory();
 		LoggerContext context = new LoggerContext("TestContext");
 		
-		assertThrows(NullPointerException.class, () -> factory.getConfiguration(context, (ConfigurationSource) null));
+		assertThrows(NullPointerException.class, () -> factory.getConfiguration(context, null));
 	}
 	
 	@Test
@@ -215,7 +215,7 @@ class SpringFactoryTest {
 	@Test
 	void factoryInheritance() {
 		SpringFactory factory = new SpringFactory();
-		assertTrue(factory instanceof ConfigurationFactory);
+		assertInstanceOf(ConfigurationFactory.class, factory);
 		
 		assertDoesNotThrow(factory::getSupportedTypes);
 	}

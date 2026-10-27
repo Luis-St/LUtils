@@ -20,7 +20,6 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -297,7 +296,7 @@ class XmlAttributeTest {
 	
 	@Test
 	void getAsWithParser() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(ScopedStringReader::readBoolean);
 		
 		assertThrows(NullPointerException.class, () -> new XmlAttribute("name", "[]").getAs(null));
 		assertThrows(IllegalArgumentException.class, () -> new XmlAttribute("name", "()").getAs(parser));
@@ -308,7 +307,7 @@ class XmlAttributeTest {
 	
 	@Test
 	void getAsWithParserAndDefault() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(ScopedStringReader::readBoolean);
 		
 		assertIterableEquals(List.of(false, true), new XmlAttribute("name", "(true, false)").getAs(parser, List.of(false, true)));
 		assertIterableEquals(List.of(true, false), new XmlAttribute("name", "[true, false]").getAs(parser, List.of()));
