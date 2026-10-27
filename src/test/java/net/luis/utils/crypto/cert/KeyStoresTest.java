@@ -24,13 +24,15 @@ import net.luis.utils.crypto.algorithm.SignatureAlgorithm;
 import net.luis.utils.crypto.exception.*;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.nio.file.*;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -38,6 +40,7 @@ import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 /**
  * Test class for {@link KeyStores}.<br>
@@ -55,11 +58,13 @@ class KeyStoresTest {
 	private static X509Certificate ca;
 	private static X509Certificate leaf;
 	private static X509Certificate unrelated;
+	private static boolean posix;
 	
 	@BeforeAll
 	static void setUp() throws Exception {
 		Providers.installBouncyCastle();
 		Files.createDirectories(DIRECTORY);
+		posix = Files.getFileStore(DIRECTORY.toAbsolutePath()).supportsFileAttributeView(PosixFileAttributeView.class);
 		Instant notBefore = Instant.now().minus(Duration.ofMinutes(5));
 		caPair = Signatures.generateKeyPair(SignatureAlgorithm.ED25519);
 		leafPair = Signatures.generateKeyPair(SignatureAlgorithm.ED25519);
@@ -257,6 +262,7 @@ class KeyStoresTest {
 	
 	@Test
 	void saveCreatesOwnerOnlyFile() throws Exception {
+		assumeTrue(posix);
 		Path file = DIRECTORY.resolve("new.p12");
 		Files.deleteIfExists(file);
 		KeyStores.save(leafStore(), file, PASSWORD);
@@ -266,12 +272,43 @@ class KeyStoresTest {
 	
 	@Test
 	void saveOverwritesExistingFile() throws Exception {
+		assumeTrue(posix);
 		Path file = DIRECTORY.resolve("existing.p12");
 		Files.write(file, new byte[] { 1, 2, 3 });
 		Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-r--r--"));
 		
 		KeyStores.save(leafStore(), file, PASSWORD);
 		assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(file)));
+		assertTrue(KeyStores.load(file, PASSWORD).isKeyEntry(KeyStores.DEFAULT_ALIAS));
+	}
+	
+	@Test
+	@EnabledOnOs(OS.WINDOWS)
+	void saveCreatesOwnerOnlyFileOnWindows() throws Exception {
+		Path file = DIRECTORY.resolve("new-windows.p12");
+		Files.deleteIfExists(file);
+		KeyStores.save(leafStore(), file, PASSWORD);
+		assertTrue(Files.exists(file));
+		
+		List<AclEntry> acl = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
+		assertEquals(1, acl.size());
+		assertEquals(AclEntryType.ALLOW, acl.getFirst().type());
+		assertEquals(Files.getOwner(file), acl.getFirst().principal());
+		assertTrue(acl.getFirst().permissions().containsAll(Set.of(AclEntryPermission.READ_DATA, AclEntryPermission.WRITE_DATA)));
+	}
+	
+	@Test
+	@EnabledOnOs(OS.WINDOWS)
+	void saveOverwritesExistingFileOnWindows() throws Exception {
+		Path file = DIRECTORY.resolve("existing-windows.p12");
+		Files.deleteIfExists(file);
+		Files.write(file, new byte[] { 1, 2, 3 });
+		
+		KeyStores.save(leafStore(), file, PASSWORD);
+		List<AclEntry> acl = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
+		assertEquals(1, acl.size());
+		assertEquals(AclEntryType.ALLOW, acl.getFirst().type());
+		assertEquals(Files.getOwner(file), acl.getFirst().principal());
 		assertTrue(KeyStores.load(file, PASSWORD).isKeyEntry(KeyStores.DEFAULT_ALIAS));
 	}
 	

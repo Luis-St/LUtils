@@ -25,6 +25,7 @@ import net.luis.utils.io.network.connection.exception.*;
 import net.luis.utils.io.network.connection.ssl.SslTestContext;
 import net.luis.utils.io.network.connection.tcp.TcpClientConfig;
 import net.luis.utils.io.network.connection.udp.UdpPeer;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -73,6 +74,10 @@ class NetworkUtilsTest {
 			} catch (SocketTimeoutException e) {
 				filler.close();
 				return new SaturatedListener(serverSocket, fillers);
+			} catch (ConnectException e) {
+				filler.close();
+				new SaturatedListener(serverSocket, fillers).close();
+				Assumptions.abort("The operating system refuses connections to a full accept queue instead of dropping them");
 			}
 		}
 		new SaturatedListener(serverSocket, fillers).close();

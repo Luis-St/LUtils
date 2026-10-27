@@ -87,6 +87,10 @@ class TcpConnectionTest {
 			} catch (SocketTimeoutException e) {
 				filler.close();
 				return new SaturatedListener(serverSocket, fillers);
+			} catch (ConnectException e) {
+				filler.close();
+				new SaturatedListener(serverSocket, fillers).close();
+				Assumptions.abort("The operating system refuses connections to a full accept queue instead of dropping them");
 			}
 		}
 		new SaturatedListener(serverSocket, fillers).close();

@@ -145,7 +145,11 @@ public final class KeyStores {
 	
 	/**
 	 * Saves the given key store to the given file, readable only by its owner.<br>
-	 * The permissions are handled as the private key writer of {@link net.luis.utils.crypto.Pems} handles them.<br>
+	 * <p>
+	 *     On a filesystem with posix permissions the file is restricted to {@code rw-------}.<br>
+	 *     On a filesystem with access control lists, such as NTFS on Windows, the list of the file is replaced by a single entry granting its owner full access.<br>
+	 *     A new file is created with the restriction already in place, an existing file is restricted after it has been written.
+	 * </p>
 	 *
 	 * @param store The key store to save
 	 * @param file The file to write to
@@ -160,10 +164,15 @@ public final class KeyStores {
 		Objects.requireNonNull(password, "Password must not be null");
 		
 		try {
-			boolean posix = Files.getFileStore(file.toAbsolutePath().getParent()).supportsFileAttributeView(PosixFileAttributeView.class);
+			FileStore fileStore = Files.getFileStore(file.toAbsolutePath().getParent());
+			boolean posix = fileStore.supportsFileAttributeView(PosixFileAttributeView.class);
+			boolean acl = !posix && fileStore.supportsFileAttributeView(AclFileAttributeView.class);
 			if (posix && Files.notExists(file)) {
 				FileAttribute<?> attribute = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"));
 				Files.createFile(file, attribute);
+			} else if (acl && Files.notExists(file)) {
+				UserPrincipal user = file.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(System.getProperty("user.name"));
+				Files.createFile(file, ownerOnlyAclAttribute(user));
 			}
 			
 			try (OutputStream output = Files.newOutputStream(file)) {
@@ -172,6 +181,8 @@ public final class KeyStores {
 			
 			if (posix) {
 				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+			} else if (acl) {
+				Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(ownerOnlyAcl(Files.getOwner(file)));
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to write the key store: " + file, e);
@@ -226,5 +237,41 @@ public final class KeyStores {
 		} catch (GeneralSecurityException | IOException e) {
 			throw new CryptoException("Cannot create a PKCS#12 key store", e);
 		}
+	}
+	
+	/**
+	 * Creates an access control list with a single entry granting the given principal full access.<br>
+	 *
+	 * @param owner The principal to grant access to
+	 * @return The access control list
+	 * @throws NullPointerException If the owner is null
+	 */
+	private static @NonNull List<AclEntry> ownerOnlyAcl(@NonNull UserPrincipal owner) {
+		Objects.requireNonNull(owner, "Owner must not be null");
+		return List.of(AclEntry.newBuilder().setType(AclEntryType.ALLOW).setPrincipal(owner).setPermissions(EnumSet.allOf(AclEntryPermission.class)).build());
+	}
+	
+	/**
+	 * Creates a file attribute which sets the access control list of a new file to a single entry granting the given principal full access.<br>
+	 *
+	 * @param owner The principal to grant access to
+	 * @return The file attribute
+	 * @throws NullPointerException If the owner is null
+	 */
+	private static @NonNull FileAttribute<List<AclEntry>> ownerOnlyAclAttribute(@NonNull UserPrincipal owner) {
+		Objects.requireNonNull(owner, "Owner must not be null");
+		
+		List<AclEntry> acl = ownerOnlyAcl(owner);
+		return new FileAttribute<>() {
+			@Override
+			public @NonNull String name() {
+				return "acl:acl";
+			}
+			
+			@Override
+			public @NonNull List<AclEntry> value() {
+				return acl;
+			}
+		};
 	}
 }
