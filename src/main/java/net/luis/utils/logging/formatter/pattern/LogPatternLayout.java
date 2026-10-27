@@ -31,13 +31,15 @@ import java.util.*;
 
 public record LogPatternLayout(@NonNull String rawPattern, @NonNull List<LogPatternToken> tokens) {
 	
+	private static final LogPatternLayoutParser DEFAULT_PARSER = new LogPatternLayoutParser(Set.of(StandardLogPatternTokenType.values()));
+	
 	public LogPatternLayout {
 		Objects.requireNonNull(rawPattern, "Raw pattern must not be null");
 		tokens = List.copyOf(Objects.requireNonNull(tokens, "Tokens must not be null"));
 	}
 	
 	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern) {
-		return new LogPatternLayoutParser(Set.of(StandardLogPatternTokenType.values())).parse(rawPattern);
+		return DEFAULT_PARSER.parse(rawPattern);
 	}
 	
 	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern, @NonNull Set<LogPatternTokenType> tokenTypes) {

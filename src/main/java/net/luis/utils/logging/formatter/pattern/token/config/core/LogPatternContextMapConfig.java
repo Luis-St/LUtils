@@ -18,8 +18,7 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
@@ -36,6 +35,7 @@ import java.util.*;
  *
  */
 
+@SuppressWarnings("RedundantUnmodifiable")
 public record LogPatternContextMapConfig(
 	@NonNull @Unmodifiable Map</*Key*/ String, /*Default value*/ String> include,
 	@NonNull @Unmodifiable List<String> exclude,
@@ -45,7 +45,7 @@ public record LogPatternContextMapConfig(
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternContextMapConfig> CODEC = CodecBuilder.of(
-		Codecs.map(Codecs.STRING).optionalFieldOf("include", Maps.newHashMap(), LogPatternContextMapConfig::include),
+		Codecs.map(Codecs.STRING).optionalFieldOf("include", Maps.newLinkedHashMap(), LogPatternContextMapConfig::include),
 		Codecs.STRING.list().optionalFieldOf("exclude", Lists.newArrayList(), LogPatternContextMapConfig::exclude),
 		Codecs.STRING.optional().optionalFieldOf("kvSeparator", Optional.empty(), LogPatternContextMapConfig::kvSeparator),
 		Codecs.STRING.optional().optionalFieldOf("entrySeparator", Optional.empty(), LogPatternContextMapConfig::entrySeparator),
@@ -61,14 +61,18 @@ public record LogPatternContextMapConfig(
 		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (include.entrySet().stream().anyMatch(pair -> pair.getValue() == null || pair.getValue().isBlank())) {
-			throw new LogPatternException("Include list must not contain null or blank keys");
+			throw new LogPatternException("Include list must not contain null or blank values");
 		}
 		if (exclude.stream().anyMatch(Objects::isNull)) {
 			throw new LogPatternException("Exclude list must not contain null values");
 		}
+		Set<String> intersection = Sets.intersection(include.keySet(), Sets.newHashSet(exclude));
+		if (!intersection.isEmpty()) {
+			throw new LogPatternException("The following context keys are declared in the include and exclude list: " + String.join(",", intersection));
+		}
 		if (kvSeparator.isPresent()) {
-			if (kvSeparator.get().isBlank()) {
-				throw new LogPatternException("Key-value separator must not be blank");
+			if (kvSeparator.get().isEmpty()) {
+				throw new LogPatternException("Key-value separator must not be empty");
 			}
 			
 			if (Strings.CI.containsAny(kvSeparator.get(), ILLEGAL_CHARS)) {
@@ -76,8 +80,8 @@ public record LogPatternContextMapConfig(
 			}
 		}
 		if (entrySeparator.isPresent()) {
-			if (entrySeparator.get().isBlank()) {
-				throw new LogPatternException("Entry separator must not be blank");
+			if (entrySeparator.get().isEmpty()) {
+				throw new LogPatternException("Entry separator must not be empty");
 			}
 			
 			if (Strings.CI.containsAny(entrySeparator.get(), ILLEGAL_CHARS)) {
@@ -85,7 +89,7 @@ public record LogPatternContextMapConfig(
 			}
 		}
 		
-		include = Map.copyOf(include);
-		exclude = List.copyOf(exclude);
+		include = Collections.unmodifiableMap(include);
+		exclude = Collections.unmodifiableList(exclude);
 	}
 }

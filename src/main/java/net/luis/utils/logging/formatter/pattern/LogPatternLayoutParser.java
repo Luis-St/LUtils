@@ -25,6 +25,7 @@ import net.luis.utils.io.codec.provider.JavaTypeProvider;
 import net.luis.utils.io.reader.*;
 import net.luis.utils.logging.formatter.pattern.token.*;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -55,10 +56,31 @@ public class LogPatternLayoutParser {
 	private final Set<LogPatternTokenType> tokenTypes;
 	
 	public LogPatternLayoutParser(@NonNull Set<LogPatternTokenType> tokenTypes) {
-		this.tokenTypes = Set.copyOf(Objects.requireNonNull(tokenTypes, "Token types must not be null"));
+		this.tokenTypes = validateTokenTypes(tokenTypes);
 	}
 	
 	//region Static helpers
+	private static @NonNull @Unmodifiable Set<LogPatternTokenType> validateTokenTypes(@Nullable Set<LogPatternTokenType> tokenTypes) {
+		Objects.requireNonNull(tokenTypes, "Token types must not be null");
+		
+		Set<String> identifiers = Sets.newHashSet();
+		for (LogPatternTokenType tokenType : tokenTypes) {
+			Set<String> intersection = Sets.intersection(identifiers, tokenType.getIdentifiers());
+			if (!intersection.isEmpty()) {
+				throw new LogPatternException("Log pattern token " + tokenType.getName() + " shares " + intersection.size() + " identifiers with at least one other token type: " + String.join(", ", intersection));
+			}
+			identifiers.addAll(tokenType.getIdentifiers());
+			
+			if (tokenType.supportsConfiguration() && tokenType.codec().isEmpty()) {
+				throw new LogPatternException("Log pattern token " + tokenType.getName() + " supports configuration, but no codec to parse the configuration was provided");
+			}
+			if (tokenType.requiresConfiguration() && !tokenType.supportsConfiguration()) {
+				throw new LogPatternException("Log pattern token " + tokenType.getName() + " requires configuration, but does not support configuration");
+			}
+		}
+		return Set.copyOf(tokenTypes);
+	}
+	
 	private static boolean isTokenIdentifierEndChar(char c) {
 		if (c == '{') {
 			return true;
@@ -74,19 +96,19 @@ public class LogPatternLayoutParser {
 		Map<String, Object> nestedItems = Maps.newLinkedHashMap();
 		Set<Map<String, Object>> createdMaps = Sets.newIdentityHashSet();
 		for (Map.Entry<String, Object> entry : configItems.entrySet()) {
-			putConfigItem(nestedItems, createdMaps, "", entry.getKey(), entry.getValue());
+			putConfigItem(nestedItems, createdMaps, "", entry.getKey(), entry.getValue(), true);
 		}
 		return nestedItems;
 	}
 	
-	private static void putConfigItem(@NonNull Map<String, Object> current, @NonNull Set<Map<String, Object>> createdMaps, @NonNull String prefix, @NonNull String key, @Nullable Object value) {
+	private static void putConfigItem(@NonNull Map<String, Object> current, @NonNull Set<Map<String, Object>> createdMaps, @NonNull String prefix, @NonNull String key, @Nullable Object value, boolean splitKey) {
 		Objects.requireNonNull(current, "Current config items must not be null");
 		Objects.requireNonNull(createdMaps, "Created maps must not be null");
 		Objects.requireNonNull(prefix, "Prefix must not be null");
 		Objects.requireNonNull(key, "Config key must not be null");
 		
 		String fullKey = prefix.isEmpty() ? key : prefix + EMBEDDED_CONFIG_SEPARATOR + key;
-		String[] parts = key.split(Pattern.quote(EMBEDDED_CONFIG_SEPARATOR), -1);
+		String[] parts = splitKey ? key.split(Pattern.quote(EMBEDDED_CONFIG_SEPARATOR), -1) : new String[] { key };
 		String path = prefix;
 		for (int i = 0; i < parts.length; i++) {
 			String part = parts[i].strip();
@@ -110,7 +132,7 @@ public class LogPatternLayoutParser {
 					throw new LogPatternException("Config key '" + entry.getKey() + "' in config item '" + fullKey + "' not valid, it must be a string");
 				}
 				
-				putConfigItem(current, createdMaps, path, nestedKey, entry.getValue());
+				putConfigItem(current, createdMaps, path, nestedKey, entry.getValue(), false);
 			}
 		}
 	}
@@ -171,7 +193,7 @@ public class LogPatternLayoutParser {
 		}
 		
 		List<LogPatternToken> tokens = Lists.newArrayList();
-		ScopedStringReader reader = new ScopedStringReader(pattern, null, StringQuoting.NONE);
+		QuotedStringReader reader = new QuotedStringReader(pattern, null, StringQuoting.NONE);
 		while (reader.canRead()) {
 			String str = reader.readUntil(TOKEN_START_CHAR);
 			if (!str.isEmpty()) {
@@ -181,39 +203,50 @@ public class LogPatternLayoutParser {
 				return new LogPatternLayout(pattern, tokens);
 			}
 			
+			StringPosition tokenPosition = reader.getPosition();
 			reader.skip();
 			
-			int position = reader.getIndex();
-			String tokenIdentifier = reader.readUntil(LogPatternLayoutParser::isTokenIdentifierEndChar);
+			if (reader.peek() == TOKEN_START_CHAR) {
+				reader.skip();
+				tokens.add(new LogPatternToken("$", StandardLogPatternTokenType.PLAIN_TEXT));
+				continue;
+			}
+			
+			String tokenIdentifier = reader.readUntil(LogPatternLayoutParser::isTokenIdentifierEndChar).toLowerCase();
 			LogPatternTokenType tokenType = this.parseTokenType(tokenIdentifier);
 			if (tokenType == null) {
-				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at position " + position);
+				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at " + tokenPosition);
 			}
 			
 			if (!reader.canRead() || reader.peek() != '{') {
 				if (tokenType.requiresConfiguration()) {
-					throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " requires configuration, but none was provided");
+					throw new LogPatternException("Token '" + tokenIdentifier + "' at " + tokenPosition + " requires configuration, but none was provided");
 				}
 				
 				tokens.add(new LogPatternToken(tokenIdentifier, tokenType));
 				continue;
 			}
 			
+			StringPosition configPosition = reader.getPosition();
 			Optional<Codec<? extends LogPatternTokenConfig>> codec = tokenType.codec();
 			if (!tokenType.supportsConfiguration()) {
-				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " does not support configuration, but configuration was provided");
+				throw new LogPatternException("Token '" + tokenIdentifier + "' at " + configPosition + " does not support configuration, but configuration was provided");
 			}
 			if (codec.isEmpty()) {
-				throw new LogPatternException("Token '" + tokenIdentifier + "' at position " + position + " does not need a configuration, but configuration was provided");
+				throw new LogPatternException("Token '" + tokenIdentifier + "' at " + configPosition + " does not need a configuration, but configuration was provided");
 			}
 			
-			try {
-				Map<String, Object> configItems = nestConfigItems(reader.readMap(StringReader::readRemaining, CONFIG_VALUE_PARSER));
+			int start = reader.getIndex();
+			try (ScopedStringReader scopedReader = reader.createSubReader(s -> new ScopedStringReader(s, ScopedStringReader.DuplicationStrategy.THROW))) {
+				Map<String, Object> configItems = nestConfigItems(scopedReader.readMap(StringReader::readRemaining, CONFIG_VALUE_PARSER));
 				LogPatternTokenConfig config = codec.get().decode(JavaTypeProvider.DEFAULT, configItems);
 				validateConfigKeys(codec.get(), config, configItems);
-				tokens.add(new LogPatternToken(tokenIdentifier, tokenType, Optional.of(config)));
+				tokens.add(new LogPatternToken("$" + tokenIdentifier + scopedReader.getString().substring(start, scopedReader.getIndex()), tokenType, Optional.of(config)));
 			} catch (Exception e) {
-				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at position " + position + " skipping token", e);
+				if (e instanceof LogPatternException ex) {
+					throw ex;
+				}
+				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at " + configPosition + " skipping token", e);
 			}
 		}
 		return new LogPatternLayout(pattern, tokens);

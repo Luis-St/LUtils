@@ -53,8 +53,11 @@ public record LogPatternMarkerConfig(
 		Objects.requireNonNull(padding, "Padding config must not be null");
 		
 		if (separator.isPresent()) {
-			if (separator.get().isBlank()) {
-				throw new LogPatternException("Separator must not be blank");
+			if (path.isPresent() && !path.get()) {
+				throw new LogPatternException("Separator can not be used if path is disabled");
+			}
+			if (separator.get().isEmpty()) {
+				throw new LogPatternException("Separator must not be empty");
 			}
 			
 			if (Strings.CI.containsAny(separator.get(), ILLEGAL_CHARS)) {

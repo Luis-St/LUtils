@@ -77,8 +77,17 @@ public record LogPatternMessageConfig(
 				throw new LogPatternException("Ellipsis length must not be greater than max length");
 			}
 		}
-		if (escapeSequence.isPresent() && Strings.CI.containsAny(escapeSequence.get(), ILLEGAL_CHARS)) {
-			throw new LogPatternException("Escape sequence must not contain newline, carriage return or tab");
+		if (!escapedCharacters.isEmpty() && escapeSequence.isEmpty()) {
+			throw new LogPatternException("Escaped characters can only be used with an escape sequence");
 		}
+		if (escapeSequence.isPresent()) {
+			if (escapedCharacters.isEmpty()) {
+				throw new LogPatternException("Escape sequence can only be used with escaped characters");
+			}
+			if (Strings.CI.containsAny(escapeSequence.get(), ILLEGAL_CHARS)) {
+				throw new LogPatternException("Escape sequence must not contain newline, carriage return or tab");
+			}
+		}
+		
 	}
 }

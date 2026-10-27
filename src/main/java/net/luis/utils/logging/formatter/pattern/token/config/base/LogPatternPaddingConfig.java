@@ -60,8 +60,19 @@ public record LogPatternPaddingConfig(
 		if (minWidth.isPresent() && minWidth.get() < 0) {
 			throw new LogPatternException("Min width must be non-negative: " + minWidth.get());
 		}
-		if (maxWidth.isPresent() && maxWidth.get() < 0) {
-			throw new LogPatternException("Max width must be non-negative: " + maxWidth.get());
+		if (maxWidth.isPresent() && maxWidth.get() <= 0) {
+			throw new LogPatternException("Max width must be positive: " + maxWidth.get());
+		}
+		if (truncateFrom.isPresent() && maxWidth.isEmpty()) {
+			throw new LogPatternException("Truncate from can only be used with max width");
+		}
+		if (minWidth.isEmpty()) {
+			if (align.isPresent()) {
+				throw new LogPatternException("Align can only be used with min width");
+			}
+			if (padChar.isPresent()) {
+				throw new LogPatternException("Pad char can only be used with min width");
+			}
 		}
 		if (minWidth.isPresent() && maxWidth.isPresent() && minWidth.get() > maxWidth.get()) {
 			throw new LogPatternException("Min width must not be greater than max width: " + minWidth.get() + " > " + maxWidth.get());

@@ -47,11 +47,16 @@ public record LogPatternLevelConfig(
 	
 	public LogPatternLevelConfig {
 		Objects.requireNonNull(length, "Length must not be null");
-		Objects.requireNonNull(casing, "Casing mus not be null");
+		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
 		
-		if (length.isPresent() && length.get() < 0) {
-			throw new LogPatternException("Length must not be negative");
+		if (length.isPresent()) {
+			if (length.get() < 0) {
+				throw new LogPatternException("Length must not be negative");
+			}
+			if (padding.isPresent() && padding.get().maxWidth().isPresent()) {
+				throw new LogPatternException("Length can not be used together with padding max width");
+			}
 		}
 	}
 }

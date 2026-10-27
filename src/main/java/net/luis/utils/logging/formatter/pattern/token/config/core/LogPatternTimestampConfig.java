@@ -19,11 +19,14 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -39,7 +42,7 @@ public record LogPatternTimestampConfig(
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternTimestampConfig> CODEC = CodecBuilder.of(
-		Codecs.STRING.optional().optionalFieldOf("format", Optional.empty(), LogPatternTimestampConfig::format),
+		Codecs.STRING.validate(LogPatternTimestampConfig::validateFormat).optional().optionalFieldOf("format", Optional.empty(), LogPatternTimestampConfig::format),
 		Codecs.ZONE_ID.optional().optionalFieldOf("timezone", Optional.empty(), LogPatternTimestampConfig::timezone),
 		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternTimestampConfig::padding)
 	).create(LogPatternTimestampConfig::new);
@@ -47,9 +50,30 @@ public record LogPatternTimestampConfig(
 		"ISO8601", "ISO8601_LOCAL", "UNIX_MILLIS", "UNIX_SECONDS", "RFC_2822", "RFC_1123"
 	);
 	
+	private static @NonNull Result<String> validateFormat(@NonNull String format) {
+		if (PRESETS.contains(format.toUpperCase())) {
+			return Result.success(format);
+		}
+		
+		try {
+			DateTimeFormatter.ofPattern(format);
+			return Result.success(format);
+		} catch (IllegalArgumentException e) {
+			return Result.error("Invalid timestamp format '" + format + "': " + e.getMessage());
+		}
+	}
+	
 	public LogPatternTimestampConfig {
 		Objects.requireNonNull(format, "Format must not be null");
 		Objects.requireNonNull(timezone, "Timezone must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		
+		if (format.isPresent()) {
+			Result<String> result = validateFormat(format.get());
+			
+			if (result.isError()) {
+				throw new LogPatternException(result.errorOrThrow());
+			}
+		}
 	}
 }

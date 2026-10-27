@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import org.jspecify.annotations.NonNull;
 
@@ -54,10 +55,15 @@ public record LogPatternExceptionConfig(
 		Objects.requireNonNull(suppressed, "Suppressed must not be null");
 		
 		if (depth.isPresent() && depth.get() < 0) {
-			throw new IllegalArgumentException("Depth must not be negative");
+			throw new LogPatternException("Depth must not be negative");
 		}
-		if (maxCauseDepth.isPresent() && maxCauseDepth.get() < 0) {
-			throw new IllegalArgumentException("Max cause depth must not be negative");
+		if (maxCauseDepth.isPresent()) {
+			if (maxCauseDepth.get() < 0) {
+				throw new LogPatternException("Max cause depth must not be negative");
+			}
+			if (causes.isPresent() && !causes.get()) {
+				throw new LogPatternException("Max cause depth can not be used if causes are disabled");
+			}
 		}
 	}
 }
