@@ -87,7 +87,7 @@ public class LogPatternLayoutParser {
 		}
 		
 		char lower = Character.toLowerCase(c);
-		return (lower < 'a' || lower > 'z') && (lower < '0' || lower > '9') && lower != '_';
+		return (lower < 'a' || lower > 'z') && (lower < '0' || lower > '9') && lower != '_' &&  lower != ':';
 	}
 	
 	private static @NonNull Map<String, Object> nestConfigItems(@NonNull Map<String, Object> configItems) {
@@ -253,6 +253,8 @@ public class LogPatternLayoutParser {
 	}
 	
 	private @Nullable LogPatternTokenType parseTokenType(@NonNull String tokenIdentifier) {
+		Objects.requireNonNull(tokenIdentifier,  "Token identifier must not be null");
+		
 		for (LogPatternTokenType tokenType : this.tokenTypes) {
 			if (tokenType.isIdentifier(tokenIdentifier)) {
 				return tokenType;

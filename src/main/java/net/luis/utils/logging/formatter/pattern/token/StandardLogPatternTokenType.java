@@ -50,7 +50,21 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	THREAD_STATE("ThreadState", Set.of("threadState", "ts"), true, false, LogPatternStringValueConfig.CODEC),
 	TIMESTAMP("Timestamp", Set.of("timestamp", "time", "date", "t"), true, false, LogPatternTimestampConfig.CODEC),
 	CONTEXT_MAP("ContextMap", Set.of("context", "ctx"), true, false, LogPatternContextMapConfig.CODEC),
-	CONTEXT_ITEM("ContextItem", Set.of(), true, false, LogPatternContextItemConfig.CODEC),
+	CONTEXT_ITEM("ContextItem", Set.of("context:", "ctx:"), true, false, LogPatternContextItemConfig.CODEC) {
+		@Override
+		public boolean isIdentifier(@Nullable String identifier) {
+			if (identifier == null) {
+				return false;
+			}
+			
+			for (String tokenIdentifier : this.getIdentifiers()) {
+				if (identifier.startsWith(tokenIdentifier)) {
+					return true;
+				}
+			}
+			return super.isIdentifier(identifier);
+		}
+	},
 	EXCEPTION("Exception", Set.of("exception", "ex", "e"), true, false, LogPatternExceptionConfig.CODEC),
 	MESSAGE("Message", Set.of("message", "msg", "m"), true, false, LogPatternMessageConfig.CODEC),
 	SEQUENCE_NUMBER("SequenceNumber", Set.of("sequenceNumber", "sequence", "sqn")),

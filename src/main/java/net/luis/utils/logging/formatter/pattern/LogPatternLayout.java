@@ -42,7 +42,7 @@ public record LogPatternLayout(@NonNull String rawPattern, @NonNull List<LogPatt
 		return DEFAULT_PARSER.parse(rawPattern);
 	}
 	
-	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern, @NonNull Set<LogPatternTokenType> tokenTypes) {
+	public static @NonNull LogPatternLayout parse(@NonNull Set<LogPatternTokenType> tokenTypes, @NonNull String rawPattern) {
 		return new LogPatternLayoutParser(Objects.requireNonNull(tokenTypes, "Token types must not be null")).parse(rawPattern);
 	}
 }
