@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 public record ThreadInfo(
 	@NonNull String name,
 	long id,
-	@Nullable ThreadGroup group,
+	@Nullable String group,
 	int priority,
 	boolean isVirtual,
 	boolean isDaemon,

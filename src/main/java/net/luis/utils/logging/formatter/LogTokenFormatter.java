@@ -16,9 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.logging.formatter.pattern.token.config.util;
+package net.luis.utils.logging.formatter;
 
-import java.lang.annotation.*;
+import net.luis.utils.logging.event.LogEvent;
+import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  *
@@ -26,8 +29,8 @@ import java.lang.annotation.*;
  *
  */
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-// ToDo: Move to root util package
-public @interface Embeddable {}
+@FunctionalInterface
+public interface LogTokenFormatter<T extends LogPatternTokenConfig> {
+	
+	@NonNull String format(@NonNull LogEvent event, @Nullable T config, @NonNull String plainTokenContent);
+}

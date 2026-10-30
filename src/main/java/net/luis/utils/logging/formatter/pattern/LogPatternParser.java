@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  *
  */
 
-public class LogPatternLayoutParser {
+public class LogPatternParser {
 	
 	private static final Function<ScopedStringReader, Object> CONFIG_VALUE_PARSER = reader -> {
 		Object value = reader.readObject();
@@ -55,7 +55,7 @@ public class LogPatternLayoutParser {
 	
 	private final Set<LogPatternTokenType> tokenTypes;
 	
-	public LogPatternLayoutParser(@NonNull Set<LogPatternTokenType> tokenTypes) {
+	public LogPatternParser(@NonNull Set<LogPatternTokenType> tokenTypes) {
 		this.tokenTypes = validateTokenTypes(tokenTypes);
 	}
 	
@@ -186,10 +186,10 @@ public class LogPatternLayoutParser {
 	}
 	//endregion
 	
-	public @NonNull LogPatternLayout parse(@NonNull String pattern) {
+	public @NonNull LogPattern parse(@NonNull String pattern) {
 		Objects.requireNonNull(pattern, "Pattern must not be null");
 		if (pattern.isEmpty()) {
-			return new LogPatternLayout(pattern, Collections.emptyList());
+			return new LogPattern(pattern, Collections.emptyList());
 		}
 		
 		List<LogPatternToken> tokens = Lists.newArrayList();
@@ -200,7 +200,7 @@ public class LogPatternLayoutParser {
 				tokens.add(new LogPatternToken(str, StandardLogPatternTokenType.PLAIN_TEXT));
 			}
 			if (!reader.canRead()) {
-				return new LogPatternLayout(pattern, tokens);
+				return new LogPattern(pattern, tokens);
 			}
 			
 			StringPosition tokenPosition = reader.getPosition();
@@ -212,7 +212,7 @@ public class LogPatternLayoutParser {
 				continue;
 			}
 			
-			String tokenIdentifier = reader.readUntil(LogPatternLayoutParser::isTokenIdentifierEndChar).toLowerCase();
+			String tokenIdentifier = reader.readUntil(LogPatternParser::isTokenIdentifierEndChar).toLowerCase();
 			LogPatternTokenType tokenType = this.parseTokenType(tokenIdentifier);
 			if (tokenType == null) {
 				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at " + tokenPosition);
@@ -249,7 +249,7 @@ public class LogPatternLayoutParser {
 				throw new LogPatternException("Failed to parse config for token '" + tokenIdentifier + "' at " + configPosition + " skipping token", e);
 			}
 		}
-		return new LogPatternLayout(pattern, tokens);
+		return new LogPattern(pattern, tokens);
 	}
 	
 	private @Nullable LogPatternTokenType parseTokenType(@NonNull String tokenIdentifier) {

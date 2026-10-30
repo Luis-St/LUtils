@@ -19,7 +19,9 @@
 package net.luis.utils.logging.formatter.pattern.token.config.base;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -34,18 +36,31 @@ import java.util.Optional;
 public record LogPatternBooleanValueConfig(
 	@NonNull Optional<String> trueValue,
 	@NonNull Optional<String> falseValue,
+	@NonNull Optional<Casing> casing,
 	@NonNull Optional<LogPatternPaddingConfig> padding
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternBooleanValueConfig> CODEC = CodecBuilder.of(
 		Codecs.STRING.optional().optionalFieldOf("trueValue", Optional.empty(), LogPatternBooleanValueConfig::trueValue),
 		Codecs.STRING.optional().optionalFieldOf("falseValue", Optional.empty(), LogPatternBooleanValueConfig::falseValue),
+		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternBooleanValueConfig::casing),
 		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternBooleanValueConfig::padding)
 	).create(LogPatternBooleanValueConfig::new);
 	
 	public LogPatternBooleanValueConfig {
 		Objects.requireNonNull(trueValue, "True value must not be null");
 		Objects.requireNonNull(falseValue, "False value must not be null");
+		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+	}
+	
+	public @NonNull String format(boolean value) {
+		String result = Boolean.toString(value);
+		if (this.trueValue.isPresent() && value) {
+			 result = this.trueValue.get();
+		} else if (this.falseValue.isPresent() && !value) {
+			 result = this.falseValue.get();
+		}
+		return LogTokenFormatHelper.format(result, this.casing, this.padding);
 	}
 }

@@ -29,20 +29,20 @@ import java.util.*;
  *
  */
 
-public record LogPatternLayout(@NonNull String rawPattern, @NonNull List<LogPatternToken> tokens) {
+public record LogPattern(@NonNull String rawPattern, @NonNull List<LogPatternToken> tokens) {
 	
-	private static final LogPatternLayoutParser DEFAULT_PARSER = new LogPatternLayoutParser(Set.of(StandardLogPatternTokenType.values()));
+	private static final LogPatternParser DEFAULT_PARSER = new LogPatternParser(Set.of(StandardLogPatternTokenType.values()));
 	
-	public LogPatternLayout {
+	public LogPattern {
 		Objects.requireNonNull(rawPattern, "Raw pattern must not be null");
 		tokens = List.copyOf(Objects.requireNonNull(tokens, "Tokens must not be null"));
 	}
 	
-	public static @NonNull LogPatternLayout parse(@NonNull String rawPattern) {
+	public static @NonNull LogPattern parse(@NonNull String rawPattern) {
 		return DEFAULT_PARSER.parse(rawPattern);
 	}
 	
-	public static @NonNull LogPatternLayout parse(@NonNull Set<LogPatternTokenType> tokenTypes, @NonNull String rawPattern) {
-		return new LogPatternLayoutParser(Objects.requireNonNull(tokenTypes, "Token types must not be null")).parse(rawPattern);
+	public static @NonNull LogPattern parse(@NonNull Set<LogPatternTokenType> tokenTypes, @NonNull String rawPattern) {
+		return new LogPatternParser(Objects.requireNonNull(tokenTypes, "Token types must not be null")).parse(rawPattern);
 	}
 }

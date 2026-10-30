@@ -19,13 +19,16 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.event.LogEvent;
+import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  *
@@ -58,5 +61,21 @@ public record LogPatternLevelConfig(
 				throw new LogPatternException("Length can not be used together with padding max width");
 			}
 		}
+	}
+	
+	@Override
+	public @NonNull String format(@NonNull LogEvent event, @NonNull String plainTokenContent) {
+		Objects.requireNonNull(event, "Log event must not be null");
+		Objects.requireNonNull(plainTokenContent, "Plain token content must not be null");
+		
+		String result = event.level().toString();
+		if (this.length.isPresent()) {
+			int length = this.length.get();
+			
+			if (result.length() > length) {
+				result = result.substring(0, length);
+			}
+		}
+		return LogTokenFormatHelper.format(result, this.casing, this.padding);
 	}
 }

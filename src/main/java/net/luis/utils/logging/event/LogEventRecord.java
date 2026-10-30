@@ -21,7 +21,6 @@ package net.luis.utils.logging.event;
 import net.luis.utils.logging.*;
 import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.marker.LogMarker;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
@@ -34,16 +33,19 @@ import java.util.Objects;
  */
 
 public record LogEventRecord(
+	@NonNull String loggerName,
 	@NonNull LogLevel level,
 	@NonNull LogMarker marker,
 	@NonNull LogMessage message,
 	@NonNull LogContext context,
 	@NonNull Instant timestamp,
 	@NonNull StackTraceElement source,
-	@NonNull ThreadInfo threadInfo
+	@NonNull ThreadInfo threadInfo,
+	long sequenceNumber
 ) implements LogEvent {
 	
 	public LogEventRecord {
+		Objects.requireNonNull(loggerName, "Logger name must not be null");
 		Objects.requireNonNull(level, "Level must not be null");
 		Objects.requireNonNull(marker, "Marker must not be null");
 		Objects.requireNonNull(message, "Message must not be null");

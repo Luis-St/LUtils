@@ -81,4 +81,29 @@ public record LogPatternPaddingConfig(
 			throw new LogPatternException("Pad char must not be a newline, carriage return or tab: " + padChar.get());
 		}
 	}
+	
+	public @NonNull String format(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		String result = value;
+		if (this.maxWidth.isPresent() && result.length() > this.maxWidth.get()) {
+			int maxWidth = this.maxWidth.get();
+			result = switch (this.truncateFrom.orElse(TruncateFrom.END)) {
+				case START -> result.substring(result.length() - maxWidth);
+				case END -> result.substring(0, maxWidth);
+			};
+		}
+		
+		if (this.minWidth.isPresent() && result.length() < this.minWidth.get()) {
+			int missing = this.minWidth.get() - result.length();
+			String padChar = String.valueOf(this.padChar.orElse(' '));
+			
+			return switch (this.align.orElse(Align.LEFT)) {
+				case LEFT -> result + padChar.repeat(missing);
+				case RIGHT -> padChar.repeat(missing) + result;
+				case CENTER -> padChar.repeat(missing / 2) + result + padChar.repeat(missing - missing / 2);
+			};
+		}
+		return result;
+	}
 }

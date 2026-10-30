@@ -64,4 +64,9 @@ public class LogLevel {
 	public @NonNull Priority getPriority() {
 		return this.priority;
 	}
+	
+	@Override
+	public String toString() {
+		return this.name;
+	}
 }
