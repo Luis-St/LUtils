@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.logging.formatter.LogTokenFormatter;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
@@ -49,4 +50,6 @@ public interface LogPatternTokenType {
 	boolean requiresConfiguration();
 	
 	@NonNull Optional<Codec<? extends LogPatternTokenConfig>> codec();
+	
+	@NonNull LogTokenFormatter<? extends LogPatternTokenConfig> formatter();
 }

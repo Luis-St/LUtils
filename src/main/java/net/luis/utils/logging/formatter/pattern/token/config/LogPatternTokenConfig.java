@@ -18,10 +18,18 @@
 
 package net.luis.utils.logging.formatter.pattern.token.config;
 
+import net.luis.utils.logging.event.LogEvent;
+import org.jspecify.annotations.NonNull;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface LogPatternTokenConfig {}
+public interface LogPatternTokenConfig {
+	
+	default @NonNull String formate(@NonNull LogEvent event, @NonNull String content) {
+		throw new UnsupportedOperationException(this.getClass().getSimpleName() + " does not support formatting");
+	}
+}

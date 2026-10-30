@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
@@ -53,5 +54,10 @@ public record LogPatternLoggerNameConfig(
 		if (segments.isPresent() && segments.get() < 0) {
 			throw new LogPatternException("Segments must not be negative");
 		}
+	}
+	
+	@Override
+	public @NonNull String formate(@NonNull LogEvent event, @NonNull String content) {
+		return LogPatternTokenConfig.super.formate(event, content);
 	}
 }

@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.logging.formatter.LogTokenFormatter;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternBooleanValueConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternStringValueConfig;
@@ -37,12 +38,14 @@ import java.util.*;
 
 public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	
-	PLAIN_TEXT("PlainText", Set.of()),
-	LOGGER_NAME("LoggerName", Set.of("logger", "name", "loggerName", "ln"), true, false, LogPatternLoggerNameConfig.CODEC),
+	PLAIN_TEXT("PlainText", Set.of(), (_, _, content) -> content),
+	LOGGER_NAME("LoggerName", Set.of("logger", "name", "loggerName", "ln"), true, false, LogPatternLoggerNameConfig.CODEC, LogTokenFormatter.configBased()),
 	LEVEL("Level", Set.of("level", "lvl", "l"), true, false, LogPatternLevelConfig.CODEC),
 	MARKER("Marker", Set.of("marker", "mk"), true, false, LogPatternMarkerConfig.CODEC),
 	THREAD_NAME("ThreadName", Set.of("threadName", "tn"), true, false, LogPatternStringValueConfig.CODEC),
-	THREAD_ID("ThreadId", Set.of("threadId", "ti")),
+	THREAD_ID("ThreadId", Set.of("threadId", "ti"), (event, _, _) -> {
+		return String.valueOf(event.threadInfo().id());
+	}),
 	THREAD_GROUP("ThreadGroup", Set.of("threadGroup", "tg"), true, false, LogPatternStringValueConfig.CODEC),
 	THREAD_PRIORITY("ThreadPriority", Set.of("threadPriority", "tp")),
 	THREAD_VIRTUAL("ThreadVirtual", Set.of("threadVirtual", "tv"), true, false, LogPatternBooleanValueConfig.CODEC),
@@ -67,7 +70,9 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	},
 	EXCEPTION("Exception", Set.of("exception", "ex", "e"), true, false, LogPatternExceptionConfig.CODEC),
 	MESSAGE("Message", Set.of("message", "msg", "m"), true, false, LogPatternMessageConfig.CODEC),
-	SEQUENCE_NUMBER("SequenceNumber", Set.of("sequenceNumber", "sequence", "sqn")),
+	SEQUENCE_NUMBER("SequenceNumber", Set.of("sequenceNumber", "sequence", "sqn"), (event, _, _) -> {
+		return String.valueOf(event.sequenceNumber());
+	}),
 	NEWLINE("Newline", Set.of("newline", "nl"), true, false, LogPatternNewlineConfig.CODEC);
 	
 	private final String name;
@@ -77,13 +82,13 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	private final Optional<Codec<? extends LogPatternTokenConfig>> codec;
 	
 	StandardLogPatternTokenType(
-		@NonNull String name, @NonNull Set<String> identifiers
+		@NonNull String name, @NonNull Set<String> identifiers, @NonNull LogTokenFormatter<LogPatternTokenConfig> formatter
 	) {
-		this(name, identifiers, false, false, null);
+		this(name, identifiers, false, false, null, formatter);
 	}
 	
-	StandardLogPatternTokenType(
-		@NonNull String name, @NonNull Set<String> identifiers, boolean supportsConfiguration, boolean requiresConfiguration, @Nullable Codec<? extends LogPatternTokenConfig> codec
+	<T extends LogPatternTokenConfig> StandardLogPatternTokenType(
+		@NonNull String name, @NonNull Set<String> identifiers, boolean supportsConfiguration, boolean requiresConfiguration, @Nullable Codec<T> codec, @NonNull LogTokenFormatter<T> formatter
 	) {
 		this.name = Objects.requireNonNull(name, "Name must not be null");
 		this.identifiers = Set.copyOf(Objects.requireNonNull(identifiers, "Identifiers must not be null"));
@@ -115,5 +120,10 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	@Override
 	public @NonNull Optional<Codec<? extends LogPatternTokenConfig>> codec() {
 		return this.codec;
+	}
+	
+	@Override
+	public @NonNull LogTokenFormatter<? extends LogPatternTokenConfig> formatter() {
+		return null;
 	}
 }

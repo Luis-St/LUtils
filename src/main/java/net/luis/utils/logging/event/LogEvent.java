@@ -21,7 +21,6 @@ package net.luis.utils.logging.event;
 import net.luis.utils.logging.*;
 import net.luis.utils.logging.context.LogContext;
 import net.luis.utils.logging.marker.LogMarker;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
@@ -33,6 +32,8 @@ import java.time.Instant;
  */
 
 public interface LogEvent {
+	
+	@NonNull String loggerName();
 	
 	@NonNull LogLevel level();
 	
@@ -47,4 +48,6 @@ public interface LogEvent {
 	@NonNull StackTraceElement source();
 	
 	@NonNull ThreadInfo threadInfo();
+	
+	long sequenceNumber();
 }
