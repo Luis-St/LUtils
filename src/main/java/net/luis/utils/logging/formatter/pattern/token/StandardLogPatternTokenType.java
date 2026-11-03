@@ -55,8 +55,8 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 	THREAD_DAEMON("ThreadDaemon", Set.of("threadDaemon", "td"), LogPatternBooleanValueConfig.CODEC, LogTokenFormatHelper.booleanValue(event -> event.threadInfo().isDaemon())),
 	THREAD_STATE("ThreadState", Set.of("threadState", "ts"), LogPatternStringValueConfig.CODEC, LogTokenFormatHelper.stringValue(event -> event.threadInfo().state(), "")),
 	TIMESTAMP("Timestamp", Set.of("timestamp", "time", "date", "t"), LogPatternTimestampConfig.CODEC, LogTokenFormatHelper.configBased()),
-	CONTEXT_MAP("ContextMap", Set.of("context", "ctx"), LogPatternContextMapConfig.CODEC),
-	CONTEXT_ITEM("ContextItem", Set.of("context:", "ctx:"), LogPatternContextItemConfig.CODEC) {
+	CONTEXT_MAP("ContextMap", Set.of("context", "ctx"), LogPatternContextMapConfig.CODEC, LogTokenFormatHelper.configBased()),
+	CONTEXT_ITEM("ContextItem", Set.of("context:", "ctx:"), LogPatternContextItemConfig.CODEC, LogTokenFormatHelper.configBased()) {
 		@Override
 		public boolean isIdentifier(@Nullable String identifier) {
 			if (identifier == null) {
@@ -64,17 +64,17 @@ public enum StandardLogPatternTokenType implements LogPatternTokenType {
 			}
 			
 			for (String tokenIdentifier : this.getIdentifiers()) {
-				if (identifier.startsWith(tokenIdentifier)) {
+				if (identifier.regionMatches(true, 0, tokenIdentifier, 0, tokenIdentifier.length())) {
 					return true;
 				}
 			}
 			return super.isIdentifier(identifier);
 		}
 	},
-	EXCEPTION("Exception", Set.of("exception", "ex", "e"), LogPatternExceptionConfig.CODEC),
-	MESSAGE("Message", Set.of("message", "msg", "m"), LogPatternMessageConfig.CODEC),
+	EXCEPTION("Exception", Set.of("exception", "ex", "e"), LogPatternExceptionConfig.CODEC, LogTokenFormatHelper.configBased()),
+	MESSAGE("Message", Set.of("message", "msg", "m"), LogPatternMessageConfig.CODEC, LogTokenFormatHelper.configBased()),
 	SEQUENCE_NUMBER("SequenceNumber", Set.of("sequenceNumber", "sequence", "sqn"), LogPatternLongValueConfig.CODEC, LogTokenFormatHelper.longValue(LogEvent::sequenceNumber)),
-	NEWLINE("Newline", Set.of("newline", "nl"), LogPatternNewlineConfig.CODEC);
+	NEWLINE("Newline", Set.of("newline", "nl"), LogPatternNewlineConfig.CODEC, LogTokenFormatHelper.configBased());
 	
 	private final String name;
 	private final Set<String> identifiers;

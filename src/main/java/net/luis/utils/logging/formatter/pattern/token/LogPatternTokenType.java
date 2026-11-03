@@ -42,7 +42,10 @@ public interface LogPatternTokenType {
 	Set<String> getIdentifiers();
 	
 	default boolean isIdentifier(@Nullable String identifier) {
-		return this.getIdentifiers().contains(identifier);
+		if (identifier == null) {
+			return false;
+		}
+		return this.getIdentifiers().stream().anyMatch(identifier::equalsIgnoreCase);
 	}
 	
 	boolean supportsConfiguration();

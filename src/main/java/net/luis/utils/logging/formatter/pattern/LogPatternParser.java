@@ -212,7 +212,7 @@ public class LogPatternParser {
 				continue;
 			}
 			
-			String tokenIdentifier = reader.readUntil(LogPatternParser::isTokenIdentifierEndChar).toLowerCase();
+			String tokenIdentifier = reader.readUntil(LogPatternParser::isTokenIdentifierEndChar);
 			LogPatternTokenType tokenType = this.parseTokenType(tokenIdentifier);
 			if (tokenType == null) {
 				throw new LogPatternException("Unknown token identifier '" + tokenIdentifier + "' at " + tokenPosition);

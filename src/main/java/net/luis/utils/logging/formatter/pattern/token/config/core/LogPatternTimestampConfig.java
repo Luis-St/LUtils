@@ -23,6 +23,7 @@ import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternDecorationConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -42,13 +43,15 @@ import java.util.*;
 public record LogPatternTimestampConfig(
 	@NonNull Optional<String> format,
 	@NonNull Optional<ZoneId> timezone,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternTimestampConfig> CODEC = CodecBuilder.of(
 		Codecs.STRING.validate(LogPatternTimestampConfig::validateFormat).optional().optionalFieldOf("format", Optional.empty(), LogPatternTimestampConfig::format),
 		Codecs.ZONE_ID.optional().optionalFieldOf("timezone", Optional.empty(), LogPatternTimestampConfig::timezone),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternTimestampConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternTimestampConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternTimestampConfig::decoration)
 	).create(LogPatternTimestampConfig::new);
 	
 	private static @NonNull Result<String> validateFormat(@NonNull String format) {
@@ -68,6 +71,7 @@ public record LogPatternTimestampConfig(
 		Objects.requireNonNull(format, "Format must not be null");
 		Objects.requireNonNull(timezone, "Timezone must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 		
 		if (format.isPresent()) {
 			Result<String> result = validateFormat(format.get());
@@ -75,7 +79,7 @@ public record LogPatternTimestampConfig(
 			if (result.isError()) {
 				throw new LogPatternException(result.errorOrThrow());
 			}
-			format = format.map(String::toUpperCase);
+			format = format.map(value -> DateTimePresent.byName(value.toUpperCase()) != null ? value.toUpperCase() : value);
 		}
 	}
 	
@@ -101,7 +105,7 @@ public record LogPatternTimestampConfig(
 		} else {
 			result = event.timestamp().toString();
 		}
-		return LogTokenFormatHelper.format(result, Optional.empty(), this.padding);
+		return LogTokenFormatHelper.format(result, Optional.empty(), this.padding, this.decoration);
 	}
 	
 	enum DateTimePresent {

@@ -46,6 +46,8 @@ public interface LogContext extends Iterable<String> {
 	@Unmodifiable
 	List<String> getKeys();
 	
+	@NonNull Optional<Object> get(@NonNull String key);
+	
 	@Override
 	default @NonNull @Unmodifiable Iterator<String> iterator() {
 		return this.getKeys().iterator();

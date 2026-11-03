@@ -37,14 +37,16 @@ public record LogPatternBooleanValueConfig(
 	@NonNull Optional<String> trueValue,
 	@NonNull Optional<String> falseValue,
 	@NonNull Optional<Casing> casing,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternBooleanValueConfig> CODEC = CodecBuilder.of(
 		Codecs.STRING.optional().optionalFieldOf("trueValue", Optional.empty(), LogPatternBooleanValueConfig::trueValue),
 		Codecs.STRING.optional().optionalFieldOf("falseValue", Optional.empty(), LogPatternBooleanValueConfig::falseValue),
 		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternBooleanValueConfig::casing),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternBooleanValueConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternBooleanValueConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternBooleanValueConfig::decoration)
 	).create(LogPatternBooleanValueConfig::new);
 	
 	public LogPatternBooleanValueConfig {
@@ -52,15 +54,16 @@ public record LogPatternBooleanValueConfig(
 		Objects.requireNonNull(falseValue, "False value must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 	}
 	
 	public @NonNull String format(boolean value) {
 		String result = Boolean.toString(value);
 		if (this.trueValue.isPresent() && value) {
-			 result = this.trueValue.get();
+			result = this.trueValue.get();
 		} else if (this.falseValue.isPresent() && !value) {
-			 result = this.falseValue.get();
+			result = this.falseValue.get();
 		}
-		return LogTokenFormatHelper.format(result, this.casing, this.padding);
+		return LogTokenFormatHelper.format(result, this.casing, this.padding, this.decoration);
 	}
 }

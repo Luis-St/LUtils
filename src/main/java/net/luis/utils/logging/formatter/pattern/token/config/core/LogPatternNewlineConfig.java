@@ -19,6 +19,7 @@
 package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.LineEnding;
 import org.jspecify.annotations.NonNull;
@@ -42,5 +43,17 @@ public record LogPatternNewlineConfig(
 	
 	public LogPatternNewlineConfig {
 		Objects.requireNonNull(style, "Line ending style must not be null");
+	}
+	
+	@Override
+	public @NonNull String format(@NonNull LogEvent event, @NonNull String plainTokenContent) {
+		Objects.requireNonNull(event, "Log event must not be null");
+		Objects.requireNonNull(plainTokenContent, "Plain token content must not be null");
+		
+		return switch (this.style.orElse(LineEnding.SYSTEM)) {
+			case LF -> "\n";
+			case CRLF -> "\r\n";
+			case SYSTEM -> System.lineSeparator();
+		};
 	}
 }

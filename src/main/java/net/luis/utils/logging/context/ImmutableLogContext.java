@@ -59,4 +59,10 @@ public class ImmutableLogContext implements LogContext {
 	public @NonNull @Unmodifiable List<String> getKeys() {
 		return List.copyOf(this.context.keySet());
 	}
+	
+	@Override
+	public @NonNull Optional<Object> get(@NonNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
+		return Optional.ofNullable(this.context.get(key));
+	}
 }

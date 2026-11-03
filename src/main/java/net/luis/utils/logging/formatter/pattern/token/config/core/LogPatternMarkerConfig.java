@@ -21,6 +21,7 @@ package net.luis.utils.logging.formatter.pattern.token.config.core;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternDecorationConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
@@ -37,13 +38,15 @@ import java.util.Optional;
 public record LogPatternMarkerConfig(
 	@NonNull Optional<Boolean> path,
 	@NonNull Optional<String> separator,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternMarkerConfig> CODEC = CodecBuilder.of(
 		Codecs.BOOLEAN.optional().optionalFieldOf("path", Optional.empty(), LogPatternMarkerConfig::path),
 		Codecs.STRING.optional().optionalFieldOf("separator", Optional.empty(), LogPatternMarkerConfig::separator),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternMarkerConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternMarkerConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternMarkerConfig::decoration)
 	).create(LogPatternMarkerConfig::new);
 	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
@@ -51,6 +54,7 @@ public record LogPatternMarkerConfig(
 		Objects.requireNonNull(path, "Path must not be null");
 		Objects.requireNonNull(separator, "Separator must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 		
 		if (separator.isPresent()) {
 			if (path.isPresent() && !path.get()) {

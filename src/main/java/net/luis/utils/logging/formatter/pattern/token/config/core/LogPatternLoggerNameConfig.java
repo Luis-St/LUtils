@@ -23,6 +23,7 @@ import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternDecorationConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import org.jspecify.annotations.NonNull;
@@ -38,19 +39,22 @@ import java.util.*;
 public record LogPatternLoggerNameConfig(
 	@NonNull Optional<Integer> segments,
 	@NonNull Optional<Casing> casing,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternLoggerNameConfig> CODEC = CodecBuilder.of(
 		Codecs.INTEGER.optional().optionalFieldOf("segments", Optional.empty(), LogPatternLoggerNameConfig::segments),
 		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternLoggerNameConfig::casing),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLoggerNameConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLoggerNameConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternLoggerNameConfig::decoration)
 	).create(LogPatternLoggerNameConfig::new);
 	
 	public LogPatternLoggerNameConfig {
 		Objects.requireNonNull(segments, "Segments must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 		
 		if (segments.isPresent() && segments.get() < 0) {
 			throw new LogPatternException("Segments must not be negative");
@@ -71,6 +75,6 @@ public record LogPatternLoggerNameConfig(
 				result = String.join(".", parts.subList(parts.size() - segments, parts.size()));
 			}
 		}
-		return LogTokenFormatHelper.format(result, this.casing, this.padding);
+		return LogTokenFormatHelper.format(result, this.casing, this.padding, this.decoration);
 	}
 }

@@ -23,6 +23,7 @@ import net.luis.utils.logging.event.LogEvent;
 import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternDecorationConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.util.Casing;
 import org.jspecify.annotations.NonNull;
@@ -39,19 +40,22 @@ import java.util.Optional;
 public record LogPatternLevelConfig(
 	@NonNull Optional<Integer> length,
 	@NonNull Optional<Casing> casing,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternLevelConfig> CODEC = CodecBuilder.of(
 		Codecs.INTEGER.optional().optionalFieldOf("length", Optional.empty(), LogPatternLevelConfig::length),
 		Codecs.enumLowerName(Casing.class).optional().optionalFieldOf("casing", Optional.empty(), LogPatternLevelConfig::casing),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLevelConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternLevelConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternLevelConfig::decoration)
 	).create(LogPatternLevelConfig::new);
 	
 	public LogPatternLevelConfig {
 		Objects.requireNonNull(length, "Length must not be null");
 		Objects.requireNonNull(casing, "Casing must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 		
 		if (length.isPresent()) {
 			if (length.get() < 0) {
@@ -76,6 +80,6 @@ public record LogPatternLevelConfig(
 				result = result.substring(0, length);
 			}
 		}
-		return LogTokenFormatHelper.format(result, this.casing, this.padding);
+		return LogTokenFormatHelper.format(result, this.casing, this.padding, this.decoration);
 	}
 }

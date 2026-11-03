@@ -20,8 +20,12 @@ package net.luis.utils.logging.formatter.pattern.token.config.core;
 
 import com.google.common.collect.*;
 import net.luis.utils.io.codec.*;
+import net.luis.utils.logging.context.LogContext;
+import net.luis.utils.logging.event.LogEvent;
+import net.luis.utils.logging.formatter.LogTokenFormatHelper;
 import net.luis.utils.logging.formatter.pattern.LogPatternException;
 import net.luis.utils.logging.formatter.pattern.token.config.LogPatternTokenConfig;
+import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternDecorationConfig;
 import net.luis.utils.logging.formatter.pattern.token.config.base.LogPatternPaddingConfig;
 import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.Unmodifiable;
@@ -41,7 +45,8 @@ public record LogPatternContextMapConfig(
 	@NonNull @Unmodifiable List<String> exclude,
 	@NonNull Optional<String> kvSeparator,
 	@NonNull Optional<String> entrySeparator,
-	@NonNull Optional<LogPatternPaddingConfig> padding
+	@NonNull Optional<LogPatternPaddingConfig> padding,
+	@NonNull Optional<LogPatternDecorationConfig> decoration
 ) implements LogPatternTokenConfig {
 	
 	public static final Codec<LogPatternContextMapConfig> CODEC = CodecBuilder.of(
@@ -49,7 +54,8 @@ public record LogPatternContextMapConfig(
 		Codecs.STRING.list().optionalFieldOf("exclude", Lists.newArrayList(), LogPatternContextMapConfig::exclude),
 		Codecs.STRING.optional().optionalFieldOf("kvSeparator", Optional.empty(), LogPatternContextMapConfig::kvSeparator),
 		Codecs.STRING.optional().optionalFieldOf("entrySeparator", Optional.empty(), LogPatternContextMapConfig::entrySeparator),
-		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternContextMapConfig::padding)
+		LogPatternPaddingConfig.CODEC.optional().optionalFieldOf("padding", Optional.empty(), LogPatternContextMapConfig::padding),
+		LogPatternDecorationConfig.CODEC.optional().optionalFieldOf("decoration", Optional.empty(), LogPatternContextMapConfig::decoration)
 	).create(LogPatternContextMapConfig::new);
 	static final String[] ILLEGAL_CHARS = { "\n", "\r", "\t" };
 	
@@ -59,6 +65,7 @@ public record LogPatternContextMapConfig(
 		Objects.requireNonNull(kvSeparator, "Key-value separator must not be null");
 		Objects.requireNonNull(entrySeparator, "Entry separator must not be null");
 		Objects.requireNonNull(padding, "Padding config must not be null");
+		Objects.requireNonNull(decoration, "Decoration config must not be null");
 		
 		if (include.entrySet().stream().anyMatch(pair -> pair.getValue() == null || pair.getValue().isBlank())) {
 			throw new LogPatternException("Include list must not contain null or blank values");
@@ -91,5 +98,32 @@ public record LogPatternContextMapConfig(
 		
 		include = Collections.unmodifiableMap(include);
 		exclude = Collections.unmodifiableList(exclude);
+	}
+	
+	@Override
+	public @NonNull String format(@NonNull LogEvent event, @NonNull String plainTokenContent) {
+		Objects.requireNonNull(event, "Log event must not be null");
+		Objects.requireNonNull(plainTokenContent, "Plain token content must not be null");
+		
+		LogContext context = event.context();
+		Map<String, String> entries = Maps.newLinkedHashMap();
+		for (Map.Entry<String, String> entry : this.include.entrySet()) {
+			entries.put(entry.getKey(), context.get(entry.getKey()).map(String::valueOf).orElse(entry.getValue()));
+		}
+		
+		List<String> remainingKeys = Lists.newArrayList(context.getKeys());
+		remainingKeys.sort(Comparator.naturalOrder());
+		for (String key : remainingKeys) {
+			if (!entries.containsKey(key) && !this.exclude.contains(key)) {
+				entries.put(key, context.get(key).map(String::valueOf).orElse("null"));
+			}
+		}
+		
+		String kvSeparator = this.kvSeparator.orElse("=");
+		StringJoiner joiner = new StringJoiner(this.entrySeparator.orElse(", "));
+		for (Map.Entry<String, String> entry : entries.entrySet()) {
+			joiner.add(entry.getKey() + kvSeparator + entry.getValue());
+		}
+		return LogTokenFormatHelper.format(joiner.toString(), Optional.empty(), this.padding, this.decoration);
 	}
 }
